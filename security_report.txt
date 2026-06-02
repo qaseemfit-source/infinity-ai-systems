@@ -1,0 +1,177 @@
+Security Review Report
+======================
+Project: Infinity AI Systems — Business Operating System
+File: /home/user/workspace/infinity-ai-v8/dist/public/index.html
+Date: 2025-07-07
+Reviewer: Automated security scan
+
+================================================================================
+SUMMARY
+================================================================================
+BLOCK findings (must fix before publish): 0
+WARN findings (informational / low risk): 3
+INFO (expected / no action needed): 1
+
+VERDICT: CLEAR TO PUBLISH — no blocking issues found.
+
+================================================================================
+BLOCK FINDINGS
+================================================================================
+None.
+
+================================================================================
+WARN FINDINGS
+================================================================================
+
+WARN-1: Google Maps JS API key is public-facing and unrestricted
+------------------------------------------------------------------------
+Line 24:
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMbOUFTTHaLNyL4bNf2BsGKDdQJqwK1-Q&libraries=places&callback=initLeadFinderMaps" async defer></script>
+
+Context: Per task brief, embedding a Maps JS API key in HTML is expected and
+correct for the Maps JavaScript API. However, if this key does not have HTTP
+Referrer restrictions configured in the Google Cloud Console, it can be freely
+used by any site that copies it.
+
+Action: In Google Cloud Console → Credentials, add an HTTP Referrer restriction
+locking this key to your production domain(s) (e.g. *.infinityaisystems.com).
+This does not block deployment but should be done before or at launch.
+
+Severity: WARN (not a code defect — a GCP console configuration gap)
+
+------------------------------------------------------------------------
+
+WARN-2: postMessage handler trusts caller-supplied parentOrigin when event.origin is "null"
+------------------------------------------------------------------------
+Lines 6469–6475 (getTrustedParentOrigin function):
+
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+Context: When event.origin is "null" (opaque srcdoc iframe), the handler
+accepts a caller-supplied event.data.parentOrigin string. The code comments
+acknowledge this explicitly and explain the mitigation: replies are sent with
+targetOrigin set to the claimed origin, so the browser drops the response if
+the real top window doesn't match. The incoming message only triggers a DOM
+screenshot capture (no auth, no data mutation), so the worst-case outcome of
+a spoofed claim is that an attacker receives... nothing (the reply is dropped).
+
+The allowedParentOrigins list also includes localhost entries:
+  "http://localhost:3000", "http://127.0.0.1:3000",
+  "http://localhost:5173", "http://127.0.0.1:5173"
+
+These pose no risk in production (localhost is not reachable from the public
+internet), but can be removed before launch to tighten the allowlist.
+
+Action (optional): Remove localhost/127.0.0.1 entries from allowedParentOrigins
+before final production deployment. The existing origin-check logic is sound.
+
+Severity: WARN (design is intentional and mitigated; localhost entries are
+cosmetic hardening)
+
+------------------------------------------------------------------------
+
+WARN-3: No Content-Security-Policy (CSP) meta tag present
+------------------------------------------------------------------------
+The file does not include a <meta http-equiv="Content-Security-Policy"> tag or
+any X-Frame-Options equivalent in the HTML.
+
+Context: For a pure static site this is typically set at the web server / CDN
+layer (Nginx, CloudFront, Vercel headers, etc.) rather than in the HTML. If
+deployment infrastructure already sets security headers, this is not an issue.
+
+Action: Confirm that the hosting layer sets at minimum:
+  Content-Security-Policy: default-src 'self' https://maps.googleapis.com https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://maps.googleapis.com; ...
+  X-Frame-Options: SAMEORIGIN  (or use CSP frame-ancestors)
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer-when-downgrade
+
+Severity: WARN (infrastructure gap, not a code defect)
+
+================================================================================
+INFO (EXPECTED / NO ACTION NEEDED)
+================================================================================
+
+INFO-1: Google Maps JS API key embedded in <script src> (expected)
+  Key: AIzaSyBMbOUFTTHaLNyL4bNf2BsGKDdQJqwK1-Q
+  This is the correct and only supported way to load the Maps JS API.
+  Not a security finding per task brief.
+
+================================================================================
+CHECKS PERFORMED (ALL CLEAR)
+================================================================================
+
+[PASS] Hardcoded secrets / passwords / private keys
+       grep: sk-*, sk-ant-*, AKIA*, xoxb-*, ghp_*, password=, secret=
+       Result: None found (excluding Google Maps key per brief)
+
+[PASS] api_credentials references
+       grep: api_credentials
+       Result: None found
+
+[PASS] llm-api:website references
+       grep: llm-api
+       Result: None found
+
+[PASS] Anthropic SDK imports
+       grep: anthropic (case-insensitive)
+       Result: None found
+
+[PASS] OpenAI SDK imports
+       grep: openai (case-insensitive, filtered to non-UI string uses)
+       Result: "OpenAI" appears once as a UI display string in a partner list
+               ("Twilio", "Retell AI", "OpenAI") — not an SDK import
+
+[PASS] call_external_tool references
+       grep: call_external_tool
+       Result: None found
+
+[PASS] dangerouslySetInnerHTML with user input (XSS)
+       All occurrences of dangerouslySetInnerHTML are inside the bundled
+       React/ReactDOM library internals — zero occurrences in application code.
+       No user-controlled data flows into __html.
+
+[PASS] eval() with user input
+       grep: eval(
+       Result: None found in application or library code
+
+[PASS] new Function() constructor (code injection vector)
+       grep: new Function(
+       Result: None found
+
+[PASS] document.write()
+       grep: document.write(
+       Result: None found
+
+[PASS] setTimeout/setInterval with string arguments (eval equivalent)
+       grep: setTimeout("...), setInterval("...")
+       Result: None found
+
+[PASS] Raw innerHTML assignments with user input
+       innerHTML is used only inside React internals for SVG/HTML namespace
+       bootstrapping with static literal strings — no user data involved.
+
+[PASS] fetch() with sensitive credentials or arbitrary URLs
+       One fetch() call present (line 6543) — used only for inlining web fonts
+       as data URIs during screenshot capture. Uses mode:"cors",
+       credentials:"omit". URL is derived from parsed CSS @font-face src
+       declarations, not from user input.
+
+[PASS] AWS / Stripe / Twilio / SendGrid / Firebase keys
+       grep: AKIA*, stripe*key, twilio*key, sendgrid*key, firebase*key
+       Result: None found
+
+[PASS] Hardcoded email addresses / internal IPs
+       Result: None found
+
+[PASS] External script sources beyond Google Maps
+       Only one external <script src>: maps.googleapis.com (expected)
+       Google Fonts loaded via <link> (stylesheet only, not script execution)
+
+================================================================================
+END OF REPORT
+================================================================================

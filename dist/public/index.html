@@ -11,6 +11,12 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .animate-spin { animation: spin 1s linear infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); opacity: 1; }
+  50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); opacity: 0.85; }
+}
+.no-site-badge { animation: pulse-glow 2s ease-in-out infinite; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1504,18 +1510,19 @@ function Stat({
   value,
   delta,
   deltaUp,
-  icon: Icon
+  icon: Icon,
+  liveDot
 }) {
   return /*#__PURE__*/React.createElement(Card, {
     hover: true
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-3"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm",
+    className: "flex items-center gap-1.5 text-sm",
     style: {
       color: C.sub
     }
-  }, label), Icon && /*#__PURE__*/React.createElement("div", {
+  }, liveDot && /*#__PURE__*/React.createElement("span", { style: { width:7, height:7, borderRadius:"50%", backgroundColor:"#4ade80", display:"inline-block", boxShadow:"0 0 6px #4ade80" } }), label), Icon && /*#__PURE__*/React.createElement("div", {
     className: "w-9 h-9 rounded-xl flex items-center justify-center",
     style: {
       backgroundColor: C.goldSoft
@@ -1635,7 +1642,9 @@ function TopNav({
   notifOpen,
   setNotifOpen,
   notifCount,
-  toast
+  toast,
+  pitchMode,
+  setPitchMode
 }) {
   const [acctOpen, setAcctOpen] = useState(false);
   const current = WORKSPACES.find(w => w.id === workspace);
@@ -1673,7 +1682,11 @@ function TopNav({
     }
   }, "AI Automation Agency"))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 sm:gap-3"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: function(){ setPitchMode && setPitchMode(true); },
+    className: "hidden sm:flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold",
+    style: { background:"linear-gradient(135deg,#C9A84C,#8a6f2a)", color:"#0A1628", border:"none", cursor:"pointer" }
+  }, "⚡ Pitch Mode"), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setNotifOpen(!notifOpen),
@@ -2017,10 +2030,11 @@ function OperatorDashboard({
       window.qaiHelpers.getClients().then(setLsClients).catch(function(){});
     }
   }, []);
-  const lsMRR = lsClients.length ? lsClients.reduce((s,c) => s + (Number(c.mrr)||0), 0) : 14500;
-  const lsActiveClients = lsClients.length || 5;
-  const lsAvgHealth = lsClients.length ? Math.round(lsClients.reduce((s,c) => s + (Number(c.health_score)||0), 0) / lsClients.length) : 78;
+  const lsMRR = lsClients.reduce((s,c) => s + (Number(c.mrr)||0), 0);
+  const lsActiveClients = lsClients.filter(c => (c.status||'active') === 'active').length;
+  const lsAvgHealth = lsClients.length ? Math.round(lsClients.reduce((s,c) => s + (Number(c.health_score)||0), 0) / lsClients.length) : 0;
   const lsRevMonth = Math.round(lsMRR * 0.85);
+  const dataLoaded = lsClients.length > 0;
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
     title: "Welcome back, Qaseem \uD83D\uDC4B",
     subtitle: "Here's how your agency is performing today."
@@ -2029,9 +2043,10 @@ function OperatorDashboard({
   }, /*#__PURE__*/React.createElement(Stat, {
     label: "Monthly Recurring Revenue",
     value: "$" + lsMRR.toLocaleString(),
-    delta: lsClients.length ? lsClients.length + " active clients" : "+22% vs last month",
-    deltaUp: true,
-    icon: DollarSign
+    delta: dataLoaded ? lsActiveClients + " active clients" : "No data — add clients",
+    deltaUp: dataLoaded,
+    icon: DollarSign,
+    liveDot: true
   }), /*#__PURE__*/React.createElement(Stat, {
     label: "Revenue This Month",
     value: "$" + lsRevMonth.toLocaleString(),
@@ -2041,13 +2056,13 @@ function OperatorDashboard({
   }), /*#__PURE__*/React.createElement(Stat, {
     label: "Active Clients",
     value: String(lsActiveClients),
-    delta: lsClients.length ? "from your client list" : "+1 this month",
-    deltaUp: true,
+    delta: dataLoaded ? "from your client list" : "No clients yet",
+    deltaUp: dataLoaded,
     icon: Users
   }), /*#__PURE__*/React.createElement(Stat, {
     label: "Avg Client Health",
-    value: String(lsAvgHealth),
-    delta: lsAvgHealth >= 75 ? "Healthy" : lsAvgHealth >= 50 ? "Watch" : "At Risk",
+    value: dataLoaded ? String(lsAvgHealth) : "—",
+    delta: dataLoaded ? (lsAvgHealth >= 75 ? "Healthy" : lsAvgHealth >= 50 ? "Watch" : "At Risk") : "No data yet",
     deltaUp: lsAvgHealth >= 60,
     icon: Activity
   })), /*#__PURE__*/React.createElement(Card, {
@@ -2432,6 +2447,37 @@ const PROSPECTS_SEED = [{
 function PipelinePage({
   toast
 }) {
+  const [supaDeals, setSupaDeals] = React.useState([]);
+  const [loadingDeals, setLoadingDeals] = React.useState(true);
+  const [dragId, setDragId] = React.useState(null);
+  const [dragOver, setDragOver] = React.useState(null);
+  const DRAG_STAGES = ["prospect","proposal_sent","negotiating","closed_won"];
+  const DRAG_LABELS = {prospect:"Prospect",proposal_sent:"Proposal Sent",negotiating:"Negotiating",closed_won:"Closed Won"};
+  const DRAG_COLORS = {prospect:"rgba(148,163,184,0.8)",proposal_sent:"#C9A84C",negotiating:"#a78bfa",closed_won:"#4ade80"};
+
+  React.useEffect(function() {
+    var db = window.qaiDB;
+    if (!db) { setLoadingDeals(false); return; }
+    db.from('pipeline_deals').select('*').order('created_at',{ascending:false})
+      .then(function(res) {
+        if (!res.error) setSupaDeals(res.data || []);
+        setLoadingDeals(false);
+      }).catch(function(){ setLoadingDeals(false); });
+  }, []);
+
+  function dropOnStage(stage) {
+    if (!dragId) return;
+    setSupaDeals(function(prev) { return prev.map(function(d) { return d.id===dragId ? Object.assign({},d,{stage:stage}) : d; }); });
+    var db = window.qaiDB;
+    if (db) {
+      db.from('pipeline_deals').update({stage:stage}).eq('id',dragId)
+        .then(function(res) { if (!res.error) toast && toast('Deal moved to '+DRAG_LABELS[stage],'success'); });
+    } else {
+      toast && toast('Deal moved to '+DRAG_LABELS[stage],'success');
+    }
+    setDragId(null); setDragOver(null);
+  }
+
   const [prospects, setProspects] = useState(PROSPECTS_SEED);
   const [showNewDeal, setShowNewDeal] = useState(false);
   const dealValue = p => computeROI(p).annualRecovered;
@@ -2476,13 +2522,60 @@ function PipelinePage({
       icon: Plus,
       onClick: () => setShowNewDeal(true)
     }, "New Deal")
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "grid gap-4",
-    style: {
-      gridTemplateColumns: "repeat(5, minmax(190px, 1fr))",
-      overflowX: "auto"
-    }
-  }, PIPELINE_STAGES.map(stage => {
+  }),
+  /* --- Supabase drag-drop board --- */
+  /*#__PURE__*/React.createElement("div", { style: { marginBottom: 32 } },
+    /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+      /*#__PURE__*/React.createElement("span", { style: { color: "#C9A84C", fontWeight: 700, fontSize: 15 } }, "Live Pipeline Board"),
+      /*#__PURE__*/React.createElement("span", { style: { width:7,height:7,borderRadius:"50%",backgroundColor:"#4ade80",display:"inline-block",boxShadow:"0 0 6px #4ade80" } })
+    ),
+    loadingDeals
+      ? /*#__PURE__*/React.createElement("p", { style: { color: "rgba(255,255,255,0.4)", fontSize: 13 } }, "Loading deals...")
+      : supaDeals.length === 0
+        ? /*#__PURE__*/React.createElement("p", { style: { color: "rgba(255,255,255,0.4)", fontSize: 13 } }, "No deals yet. Click 'Add to Pipeline' on lead cards to populate this board.")
+        : null,
+    /*#__PURE__*/React.createElement("div", {
+      style: { display:"grid", gap:12, gridTemplateColumns:"repeat(4,minmax(170px,1fr))", overflowX:"auto" }
+    },
+      DRAG_STAGES.map(function(stage) {
+        var stageDeals = supaDeals.filter(function(d){ return d.stage===stage; });
+        var stageTotal = stageDeals.reduce(function(s,d){ return s+(Number(d.value)||0); }, 0);
+        return /*#__PURE__*/React.createElement("div", {
+          key: stage,
+          onDragOver: function(e){ e.preventDefault(); setDragOver(stage); },
+          onDrop: function(){ dropOnStage(stage); },
+          onDragLeave: function(){ setDragOver(null); },
+          style: {
+            background: dragOver===stage ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.02)",
+            border: "1px solid " + (dragOver===stage ? DRAG_COLORS[stage] : "rgba(255,255,255,0.07)"),
+            borderRadius: 12, padding: "12px 10px", minHeight: 110, transition: "all 0.15s"
+          }
+        },
+          /*#__PURE__*/React.createElement("div", { style: { display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 } },
+            /*#__PURE__*/React.createElement("span", { style: { color:DRAG_COLORS[stage], fontWeight:700, fontSize:11, textTransform:"uppercase", letterSpacing:"0.07em" } }, DRAG_LABELS[stage]),
+            /*#__PURE__*/React.createElement("span", { style: { color:"#C9A84C", fontSize:11, fontWeight:700 } }, "$"+stageTotal.toLocaleString())
+          ),
+          stageDeals.map(function(deal) {
+            return /*#__PURE__*/React.createElement("div", {
+              key: deal.id, draggable: true,
+              onDragStart: function(){ setDragId(deal.id); },
+              style: {
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(201,168,76,0.15)",
+                borderLeft: "3px solid "+DRAG_COLORS[stage],
+                borderRadius: 8, padding: "8px 10px", marginBottom: 6, cursor:"grab"
+              }
+            },
+              /*#__PURE__*/React.createElement("div", { style:{ color:"#e2e8f0", fontSize:13, fontWeight:600, lineHeight:1.3 } }, deal.title||'Untitled'),
+              /*#__PURE__*/React.createElement("div", { style:{ color:"#C9A84C", fontSize:12, fontWeight:700, marginTop:2 } }, "$"+(Number(deal.value)||0).toLocaleString()),
+              deal.notes && /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.35)", fontSize:10, marginTop:2 } }, deal.notes.substring(0,60))
+            );
+          })
+        );
+      })
+    )
+  ),
+  /*#__PURE__*/React.createElement("div", {\n    className: "grid gap-4",\n    style: {\n      gridTemplateColumns: "repeat(5, minmax(190px, 1fr))",\n      overflowX: "auto"\n    }\n  }, PIPELINE_STAGES.map(stage => {
     const items = prospects.filter(p => p.stage === stage);
     const col = STAGE_COLOR[stage];
     const stageVal = items.reduce((s, p) => s + dealValue(p), 0);
@@ -5815,15 +5908,104 @@ function ROICalculatorPage({
   roi,
   setRoi
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
-    title: "ROI Calculator",
-    subtitle: "Quantify the revenue your prospect is leaking \u2014 and what AI recovers"
-  }), /*#__PURE__*/React.createElement(ROICalculator, {
-    toast: toast,
-    onBookDemo: onBookDemo,
-    roi: roi,
-    setRoi: setRoi
-  }));
+  var [adSpend, setAdSpend] = React.useState(2000);
+  var [currRev, setCurrRev] = React.useState(15000);
+  var [avgTxn, setAvgTxn] = React.useState(150);
+  var [visitors, setVisitors] = React.useState(1000);
+  var [copied, setCopied] = React.useState(false);
+
+  var revLift = Math.round(currRev * 0.15);
+  var monthlyROI = revLift - adSpend;
+  var annualROI = monthlyROI * 12;
+  var paybackDays = adSpend > 0 ? Math.round(adSpend / (revLift / 30)) : 0;
+
+  function generateReport() {
+    var lines = [
+      "=== AI AUTOMATION ROI REPORT === Qaseem AI",
+      "",
+      "INPUTS:",
+      "  Monthly Ad Spend: $" + adSpend.toLocaleString(),
+      "  Current Monthly Revenue: $" + currRev.toLocaleString(),
+      "  Avg Transaction Value: $" + avgTxn.toLocaleString(),
+      "  Monthly Visitors: " + visitors.toLocaleString(),
+      "",
+      "RESULTS:",
+      "  Projected Revenue Lift (15%): $" + revLift.toLocaleString() + "/mo",
+      "  Monthly ROI: " + (monthlyROI>=0?"+":"") + "$" + monthlyROI.toLocaleString(),
+      "  Annual ROI: " + (annualROI>=0?"+":"") + "$" + annualROI.toLocaleString(),
+      "  Payback Period: " + paybackDays + " days",
+      "",
+      "Generated by Qaseem AI",
+      "Book a call: https://calendly.com"
+    ];
+    try {
+      navigator.clipboard.writeText(lines.join("\n")).then(function() {
+        setCopied(true);
+        toast && toast("Report copied to clipboard!", "success");
+        setTimeout(function(){ setCopied(false); }, 2500);
+      });
+    } catch(e) { toast && toast("Copy failed — try a different browser", "error"); }
+  }
+
+  var inputStyle = { backgroundColor:"rgba(255,255,255,0.04)", color:"#e2e8f0", border:"1px solid rgba(201,168,76,0.2)", borderRadius:10, padding:"10px 14px", width:"100%", outline:"none", fontSize:15, boxSizing:"border-box" };
+  var resultCard = { background:"rgba(201,168,76,0.08)", border:"1px solid rgba(201,168,76,0.25)", borderRadius:12, padding:"16px 20px", flex:1, minWidth:140 };
+
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement(PageHeader, {
+      title: "ROI Calculator",
+      subtitle: "Quantify the revenue your prospect is leaking \u2014 and what AI recovers"
+    }),
+    /*#__PURE__*/React.createElement("div", {
+      style: { background:"rgba(255,255,255,0.03)", border:"1px solid rgba(201,168,76,0.2)", borderRadius:16, padding:28, marginBottom:24 }
+    },
+      /*#__PURE__*/React.createElement("h3", { style:{ color:"#C9A84C", fontWeight:700, fontSize:16, marginBottom:20 } }, "\u26a1 Live ROI Calculator"),
+      /*#__PURE__*/React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:16, marginBottom:24 } },
+        [
+          { label:"Monthly Ad Spend ($)", val:adSpend, set:setAdSpend },
+          { label:"Current Monthly Revenue ($)", val:currRev, set:setCurrRev },
+          { label:"Avg Transaction Value ($)", val:avgTxn, set:setAvgTxn },
+          { label:"Monthly Visitors", val:visitors, set:setVisitors }
+        ].map(function(f) {
+          return /*#__PURE__*/React.createElement("div", { key:f.label },
+            /*#__PURE__*/React.createElement("label", { style:{ color:"rgba(255,255,255,0.45)", fontSize:11, textTransform:"uppercase", letterSpacing:"0.08em", display:"block", marginBottom:6 } }, f.label),
+            /*#__PURE__*/React.createElement("input", { type:"number", value:f.val, style:inputStyle, onChange:function(e){ f.set(Number(e.target.value)||0); } })
+          );
+        })
+      ),
+      /*#__PURE__*/React.createElement("div", { style:{ display:"flex", flexWrap:"wrap", gap:12, marginBottom:24 } },
+        /*#__PURE__*/React.createElement("div", { style:resultCard },
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.45)", fontSize:11, marginBottom:4 } }, "PROJECTED REVENUE LIFT"),
+          /*#__PURE__*/React.createElement("div", { style:{ color:"#22d3ee", fontSize:26, fontWeight:800 } }, "$"+revLift.toLocaleString()),
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.35)", fontSize:11, marginTop:2 } }, "15% lift / month")
+        ),
+        /*#__PURE__*/React.createElement("div", { style:resultCard },
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.45)", fontSize:11, marginBottom:4 } }, "MONTHLY ROI"),
+          /*#__PURE__*/React.createElement("div", { style:{ color:monthlyROI>=0?"#4ade80":"#f87171", fontSize:26, fontWeight:800 } }, (monthlyROI>=0?"+":"")+"$"+monthlyROI.toLocaleString()),
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.35)", fontSize:11, marginTop:2 } }, "Lift minus ad spend")
+        ),
+        /*#__PURE__*/React.createElement("div", { style:resultCard },
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.45)", fontSize:11, marginBottom:4 } }, "ANNUAL ROI"),
+          /*#__PURE__*/React.createElement("div", { style:{ color:annualROI>=0?"#4ade80":"#f87171", fontSize:26, fontWeight:800 } }, (annualROI>=0?"+":"")+"$"+annualROI.toLocaleString()),
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.35)", fontSize:11, marginTop:2 } }, "12-month projection")
+        ),
+        /*#__PURE__*/React.createElement("div", { style:resultCard },
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.45)", fontSize:11, marginBottom:4 } }, "PAYBACK PERIOD"),
+          /*#__PURE__*/React.createElement("div", { style:{ color:"#C9A84C", fontSize:26, fontWeight:800 } }, paybackDays+" days"),
+          /*#__PURE__*/React.createElement("div", { style:{ color:"rgba(255,255,255,0.35)", fontSize:11, marginTop:2 } }, "Until break-even")
+        )
+      ),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: generateReport,
+        style: { background:copied?"rgba(74,222,128,0.15)":"linear-gradient(135deg,#C9A84C,#8a6f2a)", color:copied?"#4ade80":"#0A1628", border:copied?"1px solid #4ade80":"none", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:10, cursor:"pointer", transition:"all 0.2s" }
+      }, copied ? "\u2713 Copied!" : "\uD83D\uDCC4 Generate Report")
+    ),
+    /*#__PURE__*/React.createElement(ROICalculator, {
+      toast: toast,
+      onBookDemo: onBookDemo,
+      roi: roi,
+      setRoi: setRoi
+    })
+  );
 }
 
 /* ============================ ONBOARDING CHECKLIST ============================ */
@@ -6559,7 +6741,7 @@ function LeadCard({
       color: C.text
     }
   }, lead.businessName), !lead.hasWebsite && /*#__PURE__*/React.createElement("span", {
-    className: "shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold",
+    className: "no-site-badge shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold",
     style: {
       backgroundColor: "rgba(239,68,68,0.2)",
       color: C.red,
@@ -6594,6 +6776,33 @@ function LeadCard({
       color: C.sub
     }
   }, lead.rating, " (", lead.reviewCount, ")")));
+  }, !lead.hasWebsite && /*#__PURE__*/React.createElement("button", {
+    onClick: function(e) {
+      e.stopPropagation();
+      var db = window.qaiDB;
+      if (db) {
+        db.from('pipeline_deals').insert([{
+          title: (lead.businessName || lead.name || 'Lead') + ' \u2014 ' + (lead.category || 'Prospect'),
+          stage: 'prospect',
+          value: 500,
+          notes: 'City: ' + (lead.city || '') + ' | Phone: ' + (lead.phone || '') + ' | Category: ' + (lead.category || '')
+        }]).then(function(res) {
+          if (res.error) { toast && toast('Error: ' + res.error.message, 'error'); }
+          else { toast && toast('Lead added to pipeline!', 'success'); }
+        });
+      } else {
+        toast && toast('Lead added to pipeline!', 'success');
+      }
+    },
+    className: "mt-2 w-full py-1.5 rounded-lg text-xs font-bold tracking-wide",
+    style: {
+      background: "linear-gradient(135deg, #C9A84C, #8a6f2a)",
+      color: "#0A1628",
+      border: "none",
+      cursor: "pointer",
+      display: "block"
+    }
+  }, "\U0001f4b0 Add to Pipeline"));
 }
 function SitePreviewModal({
   open,
@@ -7146,6 +7355,72 @@ function ProspectingPage({
 
 
 /* ============================ APP ============================ */
+/* ===================== PITCH MODE OVERLAY ===================== */
+function PitchOverlay({ onClose }) {
+  var [stats, setStats] = React.useState({ leads: 0, pipeline: 0, clients: 0 });
+  React.useEffect(function() {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    var leads = 0;
+    try { leads = JSON.parse(localStorage.getItem('savedLeads') || '[]').length; } catch(err) {}
+    var db = window.qaiDB;
+    if (db) {
+      db.from('pipeline_deals').select('value').then(function(r) {
+        var pipeline = (r.data||[]).reduce(function(s,d){ return s+(Number(d.value)||0); }, 0);
+        db.from('clients').select('id').eq('status','active').then(function(r2) {
+          var clients = (r2.data||[]).length;
+          setStats({ leads: leads, pipeline: pipeline, clients: clients });
+        });
+      });
+    } else {
+      var clients = 0;
+      try { clients = JSON.parse(localStorage.getItem('qai_clients')||'[]').filter(function(c){ return c.status==='active'; }).length; } catch(err) {}
+      setStats({ leads: leads, pipeline: 0, clients: clients });
+    }
+    return function() { document.removeEventListener('keydown', onKey); };
+  }, []);
+  return /*#__PURE__*/React.createElement("div", {
+    style: { position:"fixed", inset:0, zIndex:9999, background:"linear-gradient(135deg,#050e1a 0%,#0A1628 60%,#0d1f38 100%)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }
+  },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: onClose,
+      style: { position:"absolute", top:20, right:24, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(201,168,76,0.3)", color:"#fff", borderRadius:8, padding:"6px 16px", cursor:"pointer", fontSize:14 }
+    }, "\u2715 Close"),
+    /*#__PURE__*/React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:14, marginBottom:28 } },
+      /*#__PURE__*/React.createElement("div", { style:{ width:56,height:56,borderRadius:14,background:"linear-gradient(135deg,#C9A84C,#8a6f2a)",display:"flex",alignItems:"center",justifyContent:"center" } },
+        /*#__PURE__*/React.createElement(InfinityIcon, { size:28, style:{ color:"#0A1628" } })
+      ),
+      /*#__PURE__*/React.createElement("div", null,
+        /*#__PURE__*/React.createElement("div", { style:{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-0.02em" } }, "Qaseem AI"),
+        /*#__PURE__*/React.createElement("div", { style:{ fontSize:13, color:"#C9A84C", fontWeight:600 } }, "AI Automation Agency")
+      )
+    ),
+    /*#__PURE__*/React.createElement("h1", {
+      style:{ fontSize:"clamp(2rem,5vw,3.2rem)", fontWeight:900, color:"#fff", textAlign:"center", maxWidth:680, lineHeight:1.1, marginBottom:10, letterSpacing:"-0.02em" }
+    }, "AI Automation for Local Businesses"),
+    /*#__PURE__*/React.createElement("p", {
+      style:{ color:"rgba(255,255,255,0.5)", fontSize:17, textAlign:"center", marginBottom:44, maxWidth:500 }
+    }, "We install AI systems that capture leads, book appointments, and recover missed revenue \u2014 24\u20447."),
+    /*#__PURE__*/React.createElement("div", { style:{ display:"flex", gap:20, marginBottom:48, flexWrap:"wrap", justifyContent:"center" } },
+      [
+        { label:"Leads Found", value:stats.leads.toLocaleString(), icon:"\uD83C\uDFAF" },
+        { label:"Pipeline Value", value:"$"+stats.pipeline.toLocaleString(), icon:"\uD83D\uDCB0" },
+        { label:"Clients Served", value:stats.clients.toLocaleString(), icon:"\u2B50" }
+      ].map(function(s) {
+        return /*#__PURE__*/React.createElement("div", { key:s.label, style:{ background:"rgba(201,168,76,0.1)", border:"1px solid rgba(201,168,76,0.35)", borderRadius:16, padding:"22px 28px", textAlign:"center", minWidth:150 } },
+          /*#__PURE__*/React.createElement("div", { style:{ fontSize:26 } }, s.icon),
+          /*#__PURE__*/React.createElement("div", { style:{ fontSize:30, fontWeight:900, color:"#C9A84C", lineHeight:1.1, margin:"4px 0" } }, s.value),
+          /*#__PURE__*/React.createElement("div", { style:{ fontSize:12, color:"rgba(255,255,255,0.45)", fontWeight:600 } }, s.label)
+        );
+      })
+    ),
+    /*#__PURE__*/React.createElement("a", {
+      href:"https://calendly.com", target:"_blank",
+      style:{ background:"linear-gradient(135deg,#C9A84C,#8a6f2a)", color:"#0A1628", fontWeight:900, fontSize:17, padding:"16px 44px", borderRadius:12, textDecoration:"none", letterSpacing:"0.01em", boxShadow:"0 8px 32px rgba(201,168,76,0.4)" }
+    }, "\uD83D\uDCCB Book a Discovery Call")
+  );
+}
+
 function App() {
   const [workspace, setWorkspace] = useState("operator");
   const defaultPage = {
@@ -7164,6 +7439,7 @@ function App() {
     [workspace]: p
   }));
   const [showLiveModal, setShowLiveModal] = useState(false);
+  const [pitchMode, setPitchMode] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifs, setNotifs] = useState(NOTIFICATIONS);
   const [toasts, setToasts] = useState([]);
@@ -7420,7 +7696,9 @@ function App() {
     notifOpen: notifOpen,
     setNotifOpen: setNotifOpen,
     notifCount: notifs.length,
-    toast: toast
+    toast: toast,
+    pitchMode: pitchMode,
+    setPitchMode: setPitchMode
   }), /*#__PURE__*/React.createElement(NotifDropdown, {
     open: notifOpen,
     onClose: () => setNotifOpen(false),
@@ -7445,7 +7723,7 @@ function App() {
     setPage: setPage
   }), /*#__PURE__*/React.createElement("div", {
     className: "p-5 sm:p-7 max-w-7xl mx-auto"
-  }, renderPage())))), /*#__PURE__*/React.createElement(Toasts, {
+  }, renderPage())))), pitchMode && /*#__PURE__*/React.createElement(PitchOverlay, { onClose: function(){ setPitchMode(false); } }), /*#__PURE__*/React.createElement(Toasts, {
     toasts: toasts,
     remove: removeToast
   }), /*#__PURE__*/React.createElement(WorkflowBuilderModal, {

@@ -580,6 +580,10 @@ const _poly = points => React.createElement('polyline', {
 const InfinityIcon = _iconEx([_p('M12 12c-2-2.5-4-4-6-4a4 4 0 0 0 0 8c2 0 4-1.5 6-4z'), _p('M12 12c2 2.5 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.5-6 4z')]);
 const ChevronDown = _iconEx([_p('m6 9 6 6 6-6')]);
 const ChevronRight = _iconEx([_p('m9 18 6-6-6-6')]);
+
+const Sunrise = _iconEx([_p('M12 2v2'), _p('m4.93 4.93 1.41 1.41'), _p('M20 12h2'), _p('m19.07 4.93-1.41 1.41'), _p('M12 7a5 5 0 1 0 5 5'), _p('M12 12v5'), _p('m9 17 3 3 3-3'), _p('M3 21h18')]);
+
+const Edit3 = _iconEx([_p('M12 20h9'), _p('M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z')]);
 const Bell = _iconEx([_p('M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'), _p('M13.73 21a2 2 0 0 1-3.46 0')]);
 const Check = _iconEx([_p('M20 6 9 17l-5-5')]);
 const X = _iconEx([_p('M18 6 6 18'), _p('M6 6l12 12')]);
@@ -2003,6 +2007,75 @@ function MobileNav({
 }
 
 /* ============================ OPERATOR PAGES ============================ */
+/* ===== MORNING DIGEST COMPONENT ===== */
+function MorningDigest() {
+  var [digest, setDigest] = React.useState(null);
+  var [loading, setLoading] = React.useState(true);
+
+  React.useEffect(function() {
+    var db = window.qaiDB;
+    if (!db) { setLoading(false); return; }
+    var today = new Date(); today.setHours(0,0,0,0);
+    db.from('agent_runs').select('*').gte('created_at', today.toISOString()).order('created_at', { ascending: false })
+      .then(function(res) {
+        if (!res.error && res.data && res.data.length) {
+          var runs = res.data;
+          var research = runs.filter(function(r){ return r.agent_type==='research'; });
+          var content = runs.filter(function(r){ return r.agent_type==='content'; });
+          var outreach = runs.filter(function(r){ return r.agent_type==='outreach'; });
+          setDigest({
+            researchSummary: research.length ? (research[0].summary || 'Ran ' + research.length + ' time(s)') : null,
+            contentSummary: content.length ? (content[0].summary || 'Ran ' + content.length + ' time(s)') : null,
+            outreachSummary: outreach.length ? (outreach[0].summary || 'Ran ' + outreach.length + ' time(s)') : null,
+            totalLeads: runs.reduce(function(s,r){ return s+(r.leads_count||0); }, 0),
+            emailsDrafted: runs.reduce(function(s,r){ return s+(r.emails_drafted||0); }, 0),
+            meetingsBooked: runs.reduce(function(s,r){ return s+(r.meetings_booked||0); }, 0)
+          });
+        }
+        setLoading(false);
+      }).catch(function(){ setLoading(false); });
+  }, []);
+
+  if (loading) return /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.3)', fontSize: 13 } }, "Loading agent brief...");
+  if (!digest) return /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.35)', fontSize: 13, padding: '8px 0' } }, "No agent runs yet today. Click Run Now on any agent to start.");
+
+  var rows = [
+    { icon: "\uD83D\uDD0D", label: 'Research Agent', val: digest.researchSummary || 'No runs today', color: '#60a5fa' },
+    { icon: "\u270F\uFE0F", label: 'Content Agent', val: digest.contentSummary || 'No runs today', color: '#a78bfa' },
+    { icon: "\u2709\uFE0F", label: 'Outreach Agent', val: digest.outreachSummary || 'No runs today', color: '#C9A84C' }
+  ];
+
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("div", { style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 } },
+      [
+        { label: 'New Leads', val: digest.totalLeads, color: '#60a5fa' },
+        { label: 'Emails Drafted', val: digest.emailsDrafted, color: '#C9A84C' },
+        { label: 'Meetings Booked', val: digest.meetingsBooked, color: '#4ade80' }
+      ].map(function(s) {
+        return /*#__PURE__*/React.createElement("div", {
+          key: s.label,
+          style: { background: s.color + '11', border: '1px solid ' + s.color + '33', borderRadius: 10, padding: '10px 16px', textAlign: 'center', minWidth: 120 }
+        },
+          /*#__PURE__*/React.createElement("div", { style: { color: s.color, fontSize: 22, fontWeight: 900 } }, s.val),
+          /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.4)', fontSize: 11 } }, s.label)
+        );
+      })
+    ),
+    rows.map(function(r) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: r.label,
+        style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }
+      },
+        /*#__PURE__*/React.createElement("span", { style: { fontSize: 16 } }, r.icon),
+        /*#__PURE__*/React.createElement("div", { style: { flex: 1 } },
+          /*#__PURE__*/React.createElement("div", { style: { color: r.color, fontSize: 12, fontWeight: 700, marginBottom: 2 } }, r.label),
+          /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.5)', fontSize: 12 } }, r.val)
+        )
+      );
+    })
+  );
+}
+
 function OperatorDashboard({
   toast,
   recs,
@@ -2185,7 +2258,21 @@ function OperatorDashboard({
     }
   }, c.pkg, " \u2022 $", c.mrr.toLocaleString(), "/mo")), /*#__PURE__*/React.createElement(Badge, {
     color: churnColor(c.churn)
-  }, c.churn, " risk"))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
+  }, c.churn, " risk"))))), /*#__PURE__*/React.createElement(Card, {
+    className: "mb-6"
+  },
+    /*#__PURE__*/React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 } },
+      /*#__PURE__*/React.createElement("div", { style: { width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#C9A84C,#8a6f2a)', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        /*#__PURE__*/React.createElement(Sunrise, { size: 18, style: { color: '#0A1628' } })
+      ),
+      /*#__PURE__*/React.createElement("div", null,
+        /*#__PURE__*/React.createElement("h3", { className: "font-display font-semibold", style: { color: C.text } }, "Today Agent Brief"),
+        /*#__PURE__*/React.createElement("p", { className: "text-xs", style: { color: C.sub } }, new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}))
+      ),
+      /*#__PURE__*/React.createElement("span", { style: { marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4ade80', boxShadow: '0 0 6px #4ade80', display: 'inline-block' } })
+    ),
+    /*#__PURE__*/React.createElement(MorningDigest, null)
+  ), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
     className: "font-display font-semibold mb-4",
     style: {
       color: C.text
@@ -2919,99 +3006,304 @@ function NewDealModal({
 function VoicePage({
   toast
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
-    title: "Voice Agents",
-    subtitle: "AI receptionists handling calls 24/7",
-    action: /*#__PURE__*/React.createElement(GButton, {
-      variant: "primary",
-      icon: Plus,
-      onClick: () => toast("Deploying new voice agent…")
-    }, "Deploy Agent")
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-  }, /*#__PURE__*/React.createElement(Stat, {
-    label: "Total Calls Handled",
-    value: "2,610",
-    icon: Phone
-  }), /*#__PURE__*/React.createElement(Stat, {
-    label: "Avg Duration",
-    value: "1m 56s",
-    icon: Clock
-  }), /*#__PURE__*/React.createElement(Stat, {
-    label: "Avg Success Rate",
-    value: "90%",
-    icon: CheckCircle2
-  }), /*#__PURE__*/React.createElement(Stat, {
-    label: "Agents Live",
-    value: "3 / 4",
-    icon: Mic
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3"
-  }, VOICE_AGENTS.map(a => /*#__PURE__*/React.createElement(Card, {
-    key: a.id,
-    hover: true
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-4 flex-wrap"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-12 h-12 rounded-xl flex items-center justify-center",
-    style: {
-      backgroundColor: C.goldSoft
+  /* ===== STATE ===== */
+  var [agentRuns, setAgentRuns] = React.useState([]);
+  var [agentStats, setAgentStats] = React.useState({
+    research: { lastRun: null, leadsFound: 0, cityScanned: '\u2014' },
+    content:  { lastRun: null, postsDrafted: 0, emailsWritten: 0 },
+    outreach: { lastRun: null, emailsDrafted: 0, meetingsBooked: 0 }
+  });
+  var [autoMode, setAutoMode] = React.useState({ research: false, content: false, outreach: false });
+  var [contentOutputs, setContentOutputs] = React.useState([]);
+  var [running, setRunning] = React.useState({ research: false, content: false, outreach: false });
+
+  /* ===== LOAD RUNS FROM SUPABASE ===== */
+  React.useEffect(function() {
+    var db = window.qaiDB;
+    if (!db) return;
+    db.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(20)
+      .then(function(res) {
+        if (!res.error && res.data) {
+          setAgentRuns(res.data);
+          // Compute stats per agent type
+          var stats = { research: {}, content: {}, outreach: {} };
+          ['research','content','outreach'].forEach(function(type) {
+            var runs = res.data.filter(function(r){ return r.agent_type === type; });
+            if (runs.length) {
+              var last = runs[0];
+              stats[type] = {
+                lastRun: last.created_at ? new Date(last.created_at).toLocaleString() : '\u2014',
+                leadsFound: last.leads_count || 0,
+                cityScanned: last.city || '\u2014',
+                postsDrafted: last.posts_drafted || 0,
+                emailsWritten: last.emails_written || 0,
+                emailsDrafted: last.emails_drafted || 0,
+                meetingsBooked: last.meetings_booked || 0
+              };
+            } else {
+              stats[type] = { lastRun: 'Never', leadsFound: 0, cityScanned: '\u2014', postsDrafted: 0, emailsWritten: 0, emailsDrafted: 0, meetingsBooked: 0 };
+            }
+          });
+          setAgentStats(stats);
+        }
+      });
+  }, []);
+
+  /* ===== RUN HANDLERS ===== */
+  function runResearch() {
+    setRunning(function(p){ return Object.assign({},p,{research:true}); });
+    var city = localStorage.getItem('lastCity') || 'Woodbridge VA';
+    // Trigger runScan if available
+    if (typeof window.runScan === 'function') {
+      window.runScan(city, true);
     }
-  }, /*#__PURE__*/React.createElement(Mic, {
-    size: 22,
-    style: {
-      color: C.gold
+    var db = window.qaiDB;
+    var runRow = { agent_type: 'research', status: 'completed', city: city, leads_count: 0, summary: 'Research scan triggered for ' + city };
+    var finish = function(leadsCount) {
+      if (db) {
+        db.from('agent_runs').insert([Object.assign({}, runRow, { leads_count: leadsCount })]).then(function(res) {
+          if (!res.error && res.data) setAgentRuns(function(p){ return (res.data||[]).concat(p).slice(0,20); });
+        });
+      }
+      setRunning(function(p){ return Object.assign({},p,{research:false}); });
+      toast && toast('Research Agent completed \u2014 ' + leadsCount + ' leads found', 'success');
+    };
+    // Count saved leads after 3s
+    setTimeout(function() {
+      var leads = 0;
+      try { leads = JSON.parse(localStorage.getItem('savedLeads')||'[]').filter(function(l){ return !l.hasWebsite; }).length; } catch(e) {}
+      finish(leads);
+    }, 3000);
+  }
+
+  function runContent() {
+    setRunning(function(p){ return Object.assign({},p,{content:true}); });
+    var leads = [];
+    try { leads = JSON.parse(localStorage.getItem('savedLeads')||'[]').filter(function(l){ return !l.hasWebsite; }).slice(0,3); } catch(e) {}
+    var outputs = leads.length ? leads.map(function(l, i) {
+      return {
+        type: i===0 ? 'LinkedIn Post' : i===1 ? 'Email Sequence' : 'Case Study Draft',
+        text: i===0
+          ? '\uD83D\uDCA1 Did you know ' + (l.businessName||'a local business') + ' in ' + (l.city||'your area') + ' has no website? AI automation could double their bookings. Here\'s how we\'d fix it in 48 hours...'
+          : i===1
+          ? 'Subject: Quick question about ' + (l.businessName||'your business') + '\n\nHi, I noticed your business doesn\'t have a website and wanted to share how our AI booking system helped similar businesses add $2K+/mo...'
+          : 'Case Study: How a ' + (l.category||'local business') + ' in ' + (l.city||'the area') + ' went from 0 online presence to fully automated in 48 hours using Qaseem AI.'
+      };
+    }) : [
+      { type: 'LinkedIn Post', text: '\uD83D\uDCA1 3 signs a local business needs AI automation: no website, misses calls after hours, books manually. We fix all 3 in 48h.' },
+      { type: 'Email Sequence', text: 'Subject: Your competitors are booking automatically\n\nHi, I help local businesses automate appointments and capture missed leads...' },
+      { type: 'Case Study Draft', text: 'Case Study: How Qaseem AI helped a local salon add $2,400/mo through automated booking and missed-call recovery.' }
+    ];
+    setContentOutputs(outputs);
+    var db = window.qaiDB;
+    var runRow = { agent_type: 'content', status: 'completed', posts_drafted: 1, emails_written: 1, summary: 'Generated ' + outputs.length + ' content pieces' };
+    if (db) {
+      db.from('agent_runs').insert([runRow]).then(function(res) {
+        if (!res.error && res.data) setAgentRuns(function(p){ return (res.data||[]).concat(p).slice(0,20); });
+      });
     }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-w-[180px]"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold",
-    style: {
-      color: C.text
+    setRunning(function(p){ return Object.assign({},p,{content:false}); });
+    toast && toast('Content Agent generated ' + outputs.length + ' pieces', 'success');
+  }
+
+  function runOutreach() {
+    setRunning(function(p){ return Object.assign({},p,{outreach:true}); });
+    var db = window.qaiDB;
+    var leads = [];
+    // Load no-website leads
+    var finish = function(leads) {
+      var tasks = leads.slice(0,5).map(function(l) {
+        return {
+          agent_type: 'outreach',
+          status: 'pending',
+          title: 'Outreach: ' + (l.name || l.businessName || 'Lead'),
+          body: 'Hi, I noticed ' + (l.name||l.businessName||'your business') + ' doesn\'t have a website. I help local ' + (l.category||'businesses') + ' in ' + (l.city||'your area') + ' automate bookings and capture missed leads. Can we chat for 15 min?',
+          lead_id: l.id || null
+        };
+      });
+      if (db && tasks.length) {
+        db.from('agent_tasks').upsert(tasks).then(function(){});
+      }
+      var runRow = { agent_type: 'outreach', status: 'completed', emails_drafted: tasks.length, summary: 'Drafted ' + tasks.length + ' outreach emails' };
+      if (db) {
+        db.from('agent_runs').insert([runRow]).then(function(res) {
+          if (!res.error && res.data) setAgentRuns(function(p){ return (res.data||[]).concat(p).slice(0,20); });
+        });
+      }
+      setRunning(function(p){ return Object.assign({},p,{outreach:false}); });
+      toast && toast('Outreach Agent drafted ' + tasks.length + ' emails', 'success');
+    };
+    if (db) {
+      db.from('leads').select('*').eq('has_website', false).limit(5)
+        .then(function(res) { finish(!res.error && res.data ? res.data : []); });
+    } else {
+      try { leads = JSON.parse(localStorage.getItem('savedLeads')||'[]').filter(function(l){ return !l.hasWebsite; }); } catch(e) {}
+      finish(leads);
     }
-  }, a.name), a.status === "LIVE" ? /*#__PURE__*/React.createElement(Badge, {
-    color: C.green,
-    solid: true
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "w-1.5 h-1.5 rounded-full inline-block",
-    style: {
-      backgroundColor: "#0A1628"
+  }
+
+  /* ===== STYLES ===== */
+  var cardBase = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 };
+  var statPill = { background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '6px 12px', fontSize: 11, color: 'rgba(255,255,255,0.5)' };
+  var runBtn = function(col) { return { background: 'linear-gradient(135deg,' + col + ',rgba(0,0,0,0.3))', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer', marginRight: 8 }; };
+  var autoBtn = function(on) { return { background: on ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)', color: on ? '#4ade80' : 'rgba(255,255,255,0.4)', border: '1px solid ' + (on ? '#4ade8055' : 'rgba(255,255,255,0.1)'), borderRadius: 8, padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }; };
+
+  var AGENTS = [
+    {
+      id: 'research',
+      label: 'Research Agent',
+      icon: Search,
+      color: '#60a5fa',
+      desc: 'Scans local businesses in your target city. Finds businesses with no website, bad reviews, or outdated sites. Routes findings directly to Lead Prospector and Pipeline.',
+      stats: [
+        { label: 'Last Run', val: agentStats.research.lastRun || 'Never' },
+        { label: 'Leads Found', val: agentStats.research.leadsFound || 0 },
+        { label: 'City Scanned', val: agentStats.research.cityScanned || '\u2014' }
+      ],
+      run: runResearch
+    },
+    {
+      id: 'content',
+      label: 'Content Agent',
+      icon: Edit3,
+      color: '#a78bfa',
+      desc: 'Turns your Research findings into LinkedIn posts, email sequences, and case study drafts. Builds authority while Research is finding money.',
+      stats: [
+        { label: 'Last Run', val: agentStats.content.lastRun || 'Never' },
+        { label: 'Posts Drafted', val: agentStats.content.postsDrafted || 0 },
+        { label: 'Emails Written', val: agentStats.content.emailsWritten || 0 }
+      ],
+      run: runContent
+    },
+    {
+      id: 'outreach',
+      label: 'Outreach Agent',
+      icon: Send,
+      color: '#C9A84C',
+      desc: 'Takes no-website leads and turns them into booked appointments. Finds contact info, drafts personalized outreach emails, tracks responses, and follows up.',
+      stats: [
+        { label: 'Last Run', val: agentStats.outreach.lastRun || 'Never' },
+        { label: 'Emails Drafted', val: agentStats.outreach.emailsDrafted || 0 },
+        { label: 'Meetings Booked', val: agentStats.outreach.meetingsBooked || 0 }
+      ],
+      run: runOutreach
     }
-  }), " LIVE") : /*#__PURE__*/React.createElement(Badge, {
-    color: C.amber
-  }, "Paused")), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-5 mt-2 text-xs",
-    style: {
-      color: C.sub
-    }
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: C.text
-    }
-  }, a.calls.toLocaleString()), " calls"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: C.text
-    }
-  }, a.dur), " avg"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: healthColor(a.success)
-    }
-  }, a.success, "%"), " success"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement(GButton, {
-    size: "sm",
-    variant: "soft",
-    icon: Play,
-    onClick: () => toast(`Test call started for ${a.name}`)
-  }, "Test"), /*#__PURE__*/React.createElement(GButton, {
-    size: "sm",
-    variant: "ghost",
-    icon: Pencil,
-    onClick: () => toast(`Editing ${a.name}`)
-  }, "Edit")))))));
+  ];
+
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement(PageHeader, {
+      title: "Voice Agents",
+      subtitle: "AI receptionists + Personal agent stack"
+    }),
+
+    /* === SECTION A: Personal Agent Stack === */
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 40 } },
+      /*#__PURE__*/React.createElement("div", { style: { marginBottom: 20 } },
+        /*#__PURE__*/React.createElement("h2", { style: { color: '#C9A84C', fontWeight: 800, fontSize: 20, marginBottom: 4 } }, "Personal Agent Stack"),
+        /*#__PURE__*/React.createElement("p", { style: { color: 'rgba(255,255,255,0.45)', fontSize: 13 } }, "Your internal AI agents that find, create, and close.")
+      ),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 20 }
+      },
+        AGENTS.map(function(agent) {
+          var Icon = agent.icon;
+          var isRunning = running[agent.id];
+          return /*#__PURE__*/React.createElement("div", { key: agent.id, style: Object.assign({}, cardBase, { borderTop: '3px solid ' + agent.color }) },
+            /* Header */
+            /*#__PURE__*/React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
+              /*#__PURE__*/React.createElement("div", {
+                style: { width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: agent.color + '22' }
+              }, /*#__PURE__*/React.createElement(Icon, { size: 20, style: { color: agent.color } })),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("div", { style: { color: '#e2e8f0', fontWeight: 700, fontSize: 15 } }, agent.label),
+                isRunning && /*#__PURE__*/React.createElement("div", { style: { color: agent.color, fontSize: 11, fontWeight: 600 } }, "\u23F3 Running...")
+              )
+            ),
+            /* Description */
+            /*#__PURE__*/React.createElement("p", { style: { color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.6, marginBottom: 16 } }, agent.desc),
+            /* Stats row */
+            /*#__PURE__*/React.createElement("div", { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 } },
+              agent.stats.map(function(s) {
+                return /*#__PURE__*/React.createElement("div", { key: s.label, style: statPill },
+                  /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.3)', fontSize: 10, marginBottom: 2 } }, s.label),
+                  /*#__PURE__*/React.createElement("div", { style: { color: '#e2e8f0', fontWeight: 700 } }, String(s.val))
+                );
+              })
+            ),
+            /* Buttons */
+            /*#__PURE__*/React.createElement("div", { style: { display: 'flex', alignItems: 'center' } },
+              /*#__PURE__*/React.createElement("button", {
+                onClick: agent.run,
+                disabled: isRunning,
+                style: Object.assign({}, runBtn(agent.color), isRunning ? { opacity: 0.5, cursor: 'wait' } : {})
+              }, isRunning ? "Running..." : "\u25B6 Run Now"),
+              /*#__PURE__*/React.createElement("button", {
+                onClick: function() { setAutoMode(function(p){ var n=Object.assign({},p); n[agent.id]=!p[agent.id]; return n; }); },
+                style: autoBtn(autoMode[agent.id])
+              }, autoMode[agent.id] ? "\u2713 Auto ON" : "Auto OFF")
+            )
+          );
+        })
+      ),
+
+      /* Content Agent Outputs */
+      contentOutputs.length > 0 && /*#__PURE__*/React.createElement("div", { style: { marginTop: 24 } },
+        /*#__PURE__*/React.createElement("h3", { style: { color: '#a78bfa', fontWeight: 700, fontSize: 14, marginBottom: 12 } }, "Content Agent Output"),
+        /*#__PURE__*/React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 14 } },
+          contentOutputs.map(function(o, i) {
+            return /*#__PURE__*/React.createElement("div", {
+              key: i,
+              style: { background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 12, padding: 16 }
+            },
+              /*#__PURE__*/React.createElement("div", { style: { color: '#a78bfa', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 } }, o.type),
+              /*#__PURE__*/React.createElement("p", { style: { color: 'rgba(255,255,255,0.7)', fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, o.text)
+            );
+          })
+        )
+      )
+    ),
+
+    /* === SECTION B: Agent Activity Log === */
+    /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("h2", { style: { color: '#C9A84C', fontWeight: 800, fontSize: 20, marginBottom: 16 } }, "Agent Activity Log"),
+      /*#__PURE__*/React.createElement("div", {
+        style: { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }
+      },
+        /* Table header */
+        /*#__PURE__*/React.createElement("div", {
+          style: { display: 'grid', gridTemplateColumns: '120px 90px 1fr 120px 140px', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }
+        },
+          ['Agent','Status','Summary','Leads/Results','Time'].map(function(h) {
+            return /*#__PURE__*/React.createElement("div", { key: h, style: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' } }, h);
+          })
+        ),
+        agentRuns.length === 0
+          ? /*#__PURE__*/React.createElement("div", { style: { padding: '32px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 } }, "No agent runs yet. Click Run Now on any agent to get started.")
+          : agentRuns.slice(0,10).map(function(run, i) {
+              var agentColor = { research: '#60a5fa', content: '#a78bfa', outreach: '#C9A84C' }[run.agent_type] || '#94a3b8';
+              var resultsVal = run.leads_count > 0 ? run.leads_count + ' leads'
+                : run.emails_drafted > 0 ? run.emails_drafted + ' emails'
+                : run.posts_drafted > 0 ? run.posts_drafted + ' posts'
+                : '\u2014';
+              var timeStr = run.created_at ? new Date(run.created_at).toLocaleString() : '\u2014';
+              return /*#__PURE__*/React.createElement("div", {
+                key: run.id || i,
+                style: { display: 'grid', gridTemplateColumns: '120px 90px 1fr 120px 140px', padding: '12px 16px', borderBottom: i < 9 ? '1px solid rgba(255,255,255,0.04)' : 'none', alignItems: 'center' }
+              },
+                /*#__PURE__*/React.createElement("div", { style: { color: agentColor, fontSize: 12, fontWeight: 700, textTransform: 'capitalize' } }, run.agent_type),
+                /*#__PURE__*/React.createElement("div", null,
+                  /*#__PURE__*/React.createElement("span", { style: { background: run.status==='completed'?'rgba(74,222,128,0.15)':'rgba(251,191,36,0.15)', color: run.status==='completed'?'#4ade80':'#fbbf24', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700 } }, run.status||'pending')
+                ),
+                /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.5)', fontSize: 12, paddingRight: 8 } }, run.summary || '\u2014'),
+                /*#__PURE__*/React.createElement("div", { style: { color: '#C9A84C', fontSize: 12, fontWeight: 700 } }, resultsVal),
+                /*#__PURE__*/React.createElement("div", { style: { color: 'rgba(255,255,255,0.3)', fontSize: 11 } }, timeStr)
+              );
+            })
+      )
+    )
+  );
 }
+
 function WorkflowsPage({
   toast,
   openBuilder,

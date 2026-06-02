@@ -2575,7 +2575,13 @@ function PipelinePage({
       })
     )
   ),
-  /*#__PURE__*/React.createElement("div", {\n    className: "grid gap-4",\n    style: {\n      gridTemplateColumns: "repeat(5, minmax(190px, 1fr))",\n      overflowX: "auto"\n    }\n  }, PIPELINE_STAGES.map(stage => {
+  /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-4",
+    style: {
+      gridTemplateColumns: "repeat(5, minmax(190px, 1fr))",
+      overflowX: "auto"
+    }
+  }, PIPELINE_STAGES.map(stage => {
     const items = prospects.filter(p => p.stage === stage);
     const col = STAGE_COLOR[stage];
     const stageVal = items.reduce((s, p) => s + dealValue(p), 0);
@@ -6775,8 +6781,8 @@ function LeadCard({
     style: {
       color: C.sub
     }
-  }, lead.rating, " (", lead.reviewCount, ")")));
-  }, !lead.hasWebsite && /*#__PURE__*/React.createElement("button", {
+  }, lead.rating, " (", lead.reviewCount, ")")),
+  !lead.hasWebsite && /*#__PURE__*/React.createElement("button", {
     onClick: function(e) {
       e.stopPropagation();
       var db = window.qaiDB;

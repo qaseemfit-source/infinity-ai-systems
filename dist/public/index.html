@@ -711,10 +711,6 @@ const OPERATOR_NAV = [{
   label: "My Clients",
   icon: Users
 }, {
-  id: "pipeline",
-  label: "Pipeline",
-  icon: GitBranch
-}, {
   id: "prospecting",
   label: "Lead Prospector",
   icon: Target
@@ -731,41 +727,21 @@ const OPERATOR_NAV = [{
   label: "Case Studies",
   icon: Award
 }, {
-  id: "scripts",
-  label: "Sales Scripts",
-  icon: ClipboardList
-}, {
-  id: "proposals",
-  label: "Proposals",
-  icon: FileText
-}, {
   id: "voice",
-  label: "Voice Agents",
+  label: "Infinity Agents",
   icon: Mic
 }, {
   id: "workflows",
-  label: "Workflows",
+  label: "Verification",
   icon: Workflow
 }, {
   id: "integrations",
   label: "Integrations",
   icon: Plug
 }, {
-  id: "inbox",
-  label: "Unified Inbox",
-  icon: Inbox
-}, {
-  id: "plans",
-  label: "Plans",
-  icon: Tags
-}, {
   id: "billing",
   label: "Billing",
   icon: CreditCard
-}, {
-  id: "academy",
-  label: "Academy",
-  icon: GraduationCap
 }, {
   id: "settings",
   label: "Settings",
@@ -917,41 +893,47 @@ const WORKFLOWS_SEED = [{
   steps: ["60d Inactive", "Email", "Follow-up SMS"]
 }];
 const INTEGRATIONS_SEED = [{
-  id: "twilio",
-  name: "Twilio",
-  desc: "SMS & Voice",
-  connected: true,
-  icon: Phone
-}, {
   id: "retell",
   name: "Retell AI",
   desc: "Voice Agents",
   connected: true,
-  icon: Mic
+  icon: Mic,
+  url: "https://retell.ai"
 }, {
   id: "ghl",
   name: "GoHighLevel",
   desc: "CRM & Pipeline",
   connected: true,
-  icon: Workflow
-}, {
-  id: "gcal",
-  name: "Google Calendar",
-  desc: "Scheduling",
-  connected: true,
-  icon: Calendar
-}, {
-  id: "stripe",
-  name: "Stripe",
-  desc: "Payments",
-  connected: false,
-  icon: CreditCard
+  icon: Workflow,
+  url: "https://www.gohighlevel.com"
 }, {
   id: "gmail",
   name: "Gmail",
   desc: "Email",
   connected: false,
-  icon: Mail
+  icon: Mail,
+  url: "https://gmail.com"
+}, {
+  id: "calendly",
+  name: "Calendly",
+  desc: "Scheduling & Booking",
+  connected: true,
+  icon: Calendar,
+  url: "https://calendly.com"
+}, {
+  id: "analytics",
+  name: "Google Analytics",
+  desc: "Traffic & Conversions",
+  connected: false,
+  icon: BarChart2,
+  url: "https://analytics.google.com"
+}, {
+  id: "stripe",
+  name: "Stripe",
+  desc: "Payments",
+  connected: false,
+  icon: CreditCard,
+  url: "https://dashboard.stripe.com"
 }];
 const THREADS = [{
   id: 1,
@@ -1948,37 +1930,7 @@ function Sidebar({
     }), /*#__PURE__*/React.createElement(Ni, {
       size: 18
     }), item.label);
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "mt-auto p-3 rounded-xl",
-    style: {
-      backgroundColor: "rgba(201,168,76,0.08)",
-      border: "1px solid rgba(201,168,76,0.2)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-1"
-  }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 15,
-    style: {
-      color: C.gold
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-semibold",
-    style: {
-      color: C.gold
-    }
-  }, "AI Copilot")), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px]",
-    style: {
-      color: C.sub
-    }
-  }, "Ask anything about your clients & revenue."), /*#__PURE__*/React.createElement("button", {
-    onClick: () => toast("AI Copilot is ready to help!"),
-    className: "mt-2 w-full py-1.5 rounded-lg text-xs font-semibold",
-    style: {
-      backgroundColor: C.gold,
-      color: "#0A1628"
-    }
-  }, "Open Copilot")));
+  }));
 }
 
 /* ============================ MOBILE NAV ============================ */
@@ -3071,7 +3023,7 @@ function VoicePage({
   /* ===== RUN HANDLERS ===== */
   function runResearch() {
     setRunning(function(p){ return Object.assign({}, p, { research: true }); });
-    var city = localStorage.getItem('lastCity') || 'Woodbridge VA';
+    var city = localStorage.getItem('lastCity') || 'Woodbridge, VA';
     setTimeout(function() {
       /* Write 27 seed leads to localStorage */
       try {
@@ -3184,7 +3136,7 @@ function VoicePage({
       label: 'Research Agent',
       icon: Search,
       color: '#60a5fa',
-      desc: 'Scans local businesses in your target city. Finds businesses with no website, bad reviews, or outdated sites. Routes findings directly to Lead Prospector and Pipeline.',
+      desc: 'Autonomously scans businesses across the United States. Finds businesses with no website, bad reviews, or unanswered calls. Routes findings directly to Lead Prospector.',
       stats: [
         { label: 'Last Run',     val: agentStats.research.lastRun     || 'Never' },
         { label: 'Leads Found',  val: agentStats.research.leadsFound  || 0 },
@@ -3197,7 +3149,7 @@ function VoicePage({
       label: 'Content Agent',
       icon: Edit3,
       color: '#a78bfa',
-      desc: 'Turns your Research findings into LinkedIn posts, email sequences, and case study drafts. Builds authority while Research is finding money.',
+      desc: 'Takes Research findings and emails Qaseem at qaseemfit@gmail.com with post ideas, why to post them, and which businesses to target \u2014 so content always matches the pipeline.',
       stats: [
         { label: 'Last Run',      val: agentStats.content.lastRun      || 'Never' },
         { label: 'Posts Drafted', val: agentStats.content.postsDrafted || 0 },
@@ -3210,7 +3162,7 @@ function VoicePage({
       label: 'Outreach Agent',
       icon: Send,
       color: '#C9A84C',
-      desc: 'Takes no-website leads and turns them into booked appointments. Finds contact info, drafts personalized outreach emails, tracks responses, and follows up.',
+      desc: 'Autonomously drafts and sends personalized outreach emails from qaseemfit@gmail.com to leads with no website. Each email includes: personalized pitch, ROI snapshot, proposal summary, and Calendly booking link.',
       stats: [
         { label: 'Last Run',       val: agentStats.outreach.lastRun       || 'Never' },
         { label: 'Emails Drafted', val: agentStats.outreach.emailsDrafted || 0 },
@@ -3222,8 +3174,8 @@ function VoicePage({
 
   return /*#__PURE__*/React.createElement("div", null,
     /*#__PURE__*/React.createElement(PageHeader, {
-      title: "Voice Agents",
-      subtitle: "AI receptionists + Personal agent stack"
+      title: "Infinity Agents",
+      subtitle: "Your autonomous AI team \u2014 researching, creating, and closing 24/7"
     }),
 
     /* === SECTION A: Personal Agent Stack === */
@@ -3330,83 +3282,67 @@ function VoicePage({
 }
 
 function WorkflowsPage({
-  toast,
-  openBuilder,
-  workflows,
-  toggleWorkflow
+  toast
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
-    title: "Workflows",
-    subtitle: "Automations running across your clients",
-    action: /*#__PURE__*/React.createElement(GButton, {
-      variant: "primary",
-      icon: Wand2,
-      onClick: openBuilder
-    }, "Build with AI")
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3"
-  }, workflows.map(w => /*#__PURE__*/React.createElement(Card, {
-    key: w.id,
-    hover: true
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-start gap-4 flex-wrap"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-11 h-11 rounded-xl flex items-center justify-center",
-    style: {
-      backgroundColor: C.goldSoft
-    }
-  }, /*#__PURE__*/React.createElement(Workflow, {
-    size: 20,
-    style: {
-      color: C.gold
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-w-[200px]"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 flex-wrap"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold",
-    style: {
-      color: C.text
-    }
-  }, w.name), /*#__PURE__*/React.createElement(Badge, {
-    color: w.status === "Active" ? C.green : C.amber
-  }, w.status)), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-1.5 mt-2"
-  }, w.steps.map((s, i) => /*#__PURE__*/React.createElement("span", {
-    key: i,
-    className: "px-2 py-0.5 rounded-md text-[11px]",
-    style: {
-      backgroundColor: "rgba(255,255,255,0.05)",
-      color: C.sub,
-      border: "1px solid rgba(201,168,76,0.15)"
-    }
-  }, s))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-4 mt-2 text-xs",
-    style: {
-      color: C.sub
-    }
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: C.text
-    }
-  }, w.runs.toLocaleString()), " runs"), /*#__PURE__*/React.createElement("span", null, "Last run ", w.last))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement(GButton, {
-    size: "sm",
-    variant: w.status === "Active" ? "danger" : "soft",
-    icon: Power,
-    onClick: () => {
-      toggleWorkflow(w.id);
-      toast(`${w.name} ${w.status === "Active" ? "paused" : "activated"}`);
-    }
-  }, w.status === "Active" ? "Pause" : "Activate"), /*#__PURE__*/React.createElement(GButton, {
-    size: "sm",
-    variant: "ghost",
-    icon: Pencil,
-    onClick: () => toast(`Editing ${w.name}`)
-  }, "Edit")))))));
+  var logs = [];
+  try { logs = JSON.parse(localStorage.getItem('agent_logs') || '[]'); } catch(e) {}
+  var researchLog = logs.filter(function(l){ return l.agent_type === 'research'; });
+  var contentLog  = logs.filter(function(l){ return l.agent_type === 'content'; });
+  var outreachLog = logs.filter(function(l){ return l.agent_type === 'outreach'; });
+  var cards = [
+    { label:'Research Agent', color:'#60a5fa', lastRun: researchLog.length ? new Date(researchLog[0].created_at).toLocaleString() : 'Not started', count: researchLog.length ? researchLog[0].leads_count + ' leads' : '0 leads', status: researchLog.length ? 'done' : 'not_started' },
+    { label:'Content Agent',  color:'#a78bfa', lastRun: contentLog.length  ? new Date(contentLog[0].created_at).toLocaleString()  : 'Not started', count: contentLog.length  ? (contentLog[0].posts_drafted||0)  + ' posts, ' + (contentLog[0].emails_written||0) + ' emails' : '0 posts', status: contentLog.length  ? 'done' : 'not_started' },
+    { label:'Outreach Agent', color:'#C9A84C', lastRun: outreachLog.length ? new Date(outreachLog[0].created_at).toLocaleString() : 'Not started', count: outreachLog.length ? (outreachLog[0].emails_drafted||0) + ' emails' : '0 emails', status: outreachLog.length ? 'done' : 'not_started' }
+  ];
+  var statusBadge = function(s) {
+    if (s==='done')    return { bg:'rgba(74,222,128,0.15)',  color:'#4ade80', label:'Completed'  };
+    if (s==='pending') return { bg:'rgba(251,191,36,0.15)',  color:'#fbbf24', label:'Pending'    };
+    return               { bg:'rgba(255,255,255,0.07)', color:'rgba(255,255,255,0.4)', label:'Not Started' };
+  };
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement(PageHeader, { title:"Verification Hub", subtitle:"Confirm your autonomous agents are running and delivering results" }),
+    /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:20, marginBottom:32 } },
+      cards.map(function(c) {
+        var badge = statusBadge(c.status);
+        return /*#__PURE__*/React.createElement("div", { key:c.label, style:{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:24, borderTop:'3px solid '+c.color } },
+          /*#__PURE__*/React.createElement("div", { style:{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 } },
+            /*#__PURE__*/React.createElement("div", { style:{ color:c.color, fontWeight:700, fontSize:14 } }, c.label),
+            /*#__PURE__*/React.createElement("span", { style:{ background:badge.bg, color:badge.color, borderRadius:6, padding:'3px 10px', fontSize:11, fontWeight:700 } }, badge.label)
+          ),
+          /*#__PURE__*/React.createElement("div", { style:{ color:'#e2e8f0', fontSize:22, fontWeight:900, marginBottom:6 } }, c.count),
+          /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.35)', fontSize:11 } }, "Last run: ", c.lastRun)
+        );
+      })
+    ),
+    /*#__PURE__*/React.createElement("div", { style:{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, overflow:'hidden' } },
+      /*#__PURE__*/React.createElement("div", { style:{ padding:'14px 20px', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.03)' } },
+        /*#__PURE__*/React.createElement("div", { style:{ color:'#C9A84C', fontWeight:800, fontSize:16 } }, "Agent Activity Timeline"),
+        /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.4)', fontSize:12 } }, "All recent agent actions in real-time")
+      ),
+      logs.length === 0
+        ? /*#__PURE__*/React.createElement("div", { style:{ padding:'40px 20px', textAlign:'center', color:'rgba(255,255,255,0.3)', fontSize:13 } }, "No agent activity yet. Go to Infinity Agents and click Run Now to get started.")
+        : /*#__PURE__*/React.createElement("div", { style:{ padding:'8px 0' } },
+            logs.slice(0,20).map(function(entry, i) {
+              var agentColor = { research:'#60a5fa', content:'#a78bfa', outreach:'#C9A84C' }[entry.agent_type] || '#94a3b8';
+              var icon = entry.agent_type==='research' ? '\uD83D\uDD0D' : entry.agent_type==='content' ? '\u270F\uFE0F' : '\u2709\uFE0F';
+              var timeStr = entry.created_at ? new Date(entry.created_at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+              return /*#__PURE__*/React.createElement("div", { key:entry.id||i, style:{ display:'flex', alignItems:'flex-start', gap:14, padding:'12px 20px', borderBottom: i<logs.length-1 ? '1px solid rgba(255,255,255,0.03)' : 'none' } },
+                /*#__PURE__*/React.createElement("div", { style:{ fontSize:18, marginTop:2, minWidth:24, textAlign:'center' } }, icon),
+                /*#__PURE__*/React.createElement("div", { style:{ flex:1 } },
+                  /*#__PURE__*/React.createElement("div", { style:{ display:'flex', alignItems:'center', gap:8, marginBottom:2 } },
+                    /*#__PURE__*/React.createElement("span", { style:{ color:agentColor, fontWeight:700, fontSize:12, textTransform:'capitalize' } }, entry.agent_type + ' Agent'),
+                    /*#__PURE__*/React.createElement("span", { style:{ color:'rgba(255,255,255,0.25)', fontSize:11 } }, timeStr)
+                  ),
+                  /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.6)', fontSize:13 } }, entry.summary || '\u2014')
+                ),
+                /*#__PURE__*/React.createElement("span", { style:{ background:'rgba(74,222,128,0.12)', color:'#4ade80', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:700, whiteSpace:'nowrap' } }, entry.status || 'completed')
+              );
+            })
+          )
+    )
+  );
 }
+
 function IntegrationsPage({
   toast,
   integrations,
@@ -3417,11 +3353,13 @@ function IntegrationsPage({
     subtitle: "Connect the tools that power your automations"
   }), /*#__PURE__*/React.createElement("div", {
     className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-  }, integrations.map(it => {
-    const Ii = it.icon;
+  }, integrations.map(function(it) {
+    var Ii = it.icon;
     return /*#__PURE__*/React.createElement(Card, {
       key: it.id,
-      hover: true
+      hover: true,
+      style: { cursor: 'pointer' },
+      onClick: function() { if (it.url) window.open(it.url, '_blank'); }
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3 mb-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3456,12 +3394,13 @@ function IntegrationsPage({
       color: C.sub
     }, "Not connected"), /*#__PURE__*/React.createElement(GButton, {
       size: "sm",
-      variant: it.connected ? "danger" : "primary",
-      onClick: () => {
-        toggle(it.id);
-        toast(`${it.name} ${it.connected ? "disconnected" : "connected"}`);
+      variant: "primary",
+      onClick: function(e) {
+        e.stopPropagation();
+        if (it.url) window.open(it.url, '_blank');
+        else toast(it.name + ' opened');
       }
-    }, it.connected ? "Disconnect" : "Connect")));
+    }, "Open")));
   })));
 }
 function InboxPage({
@@ -3671,343 +3610,108 @@ function Slider({
   }));
 }
 function AuditPage({
-  toast,
-  onBookDemo,
-  roi,
-  setRoi
+  toast
 }) {
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
-    name: "",
-    industry: "Med Spa",
-    leads: 200,
-    ticket: 250,
-    missedPct: 30
-  });
-  const calc = useMemo(() => {
-    const missedLeads = Math.round(form.leads * (form.missedPct / 100));
-    const missedRevenue = missedLeads * form.ticket;
-    const recoverable = Math.round(missedRevenue * 0.7);
-    return {
-      missedLeads,
-      missedRevenue,
-      recoverable,
-      annual: recoverable * 12
-    };
-  }, [form]);
-  const pkg = calc.recoverable > 12000 ? {
-    name: "Scale",
-    price: 6500
-  } : calc.recoverable > 5000 ? {
-    name: "Growth",
-    price: 3500
-  } : {
-    name: "Starter",
-    price: 1500
+  var [submitted, setSubmitted] = React.useState(false);
+  var [form, setForm] = React.useState({ businessName:'', category:'barber shop', monthlyRevenue:'', missedCallsPerWeek:'', hasWebsite:'no', respondsToReviews:'no' });
+  var [report, setReport] = React.useState(null);
+  var cats = ['barber shop','hair salon','nail salon','gym','auto repair','restaurant','cleaning service','landscaping','health clinic','pharmacy','plumbing'];
+  var inputStyle = { backgroundColor:'rgba(255,255,255,0.05)', color:'#e2e8f0', border:'1px solid rgba(201,168,76,0.25)', borderRadius:10, padding:'10px 14px', width:'100%', fontSize:14, boxSizing:'border-box' };
+  var labelStyle = { color:'rgba(255,255,255,0.5)', fontSize:12, fontWeight:600, marginBottom:6, display:'block' };
+  var inputChange = function(k) { return function(e) { setForm(function(p){ var n=Object.assign({},p); n[k]=e.target.value; return n; }); }; };
+  var handleSubmit = function(e) {
+    e.preventDefault();
+    var rev = parseFloat(form.monthlyRevenue) || 5000;
+    var missed = parseInt(form.missedCallsPerWeek) || 8;
+    var avg = { 'barber shop':45,'hair salon':65,'nail salon':55,'gym':80,'auto repair':180,'restaurant':35,'cleaning service':150,'landscaping':200,'health clinic':120,'pharmacy':40,'plumbing':220 }[form.category] || 80;
+    var bookings = form.hasWebsite==='no' ? Math.round(rev*0.34) : Math.round(rev*0.12);
+    var missedRev = Math.round(missed*4.3*avg);
+    var reviewVal = form.respondsToReviews==='no' ? Math.round(rev*0.04) : Math.round(rev*0.015);
+    var ratingGain = form.respondsToReviews==='no' ? '0.4\u20130.7 stars' : '0.2\u20130.3 stars';
+    setReport({ bookings, missedRev, reviewVal, ratingGain, total: bookings+missedRev+reviewVal });
+    setSubmitted(true);
   };
-  const roiMultiple = Math.round(calc.recoverable / pkg.price * 100) / 100;
-  const input = {
-    backgroundColor: "rgba(255,255,255,0.04)",
-    color: C.text,
-    border: "1px solid rgba(201,168,76,0.2)"
-  };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
-    title: "AI Revenue Audit",
-    subtitle: "Find the hidden revenue your prospect is leaking"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-6"
-  }, ["Business Info", "Pain Points", "Recommendation"].map((s, i) => {
-    const n = i + 1;
-    const done = step > n,
-      active = step === n;
-    return /*#__PURE__*/React.createElement(React.Fragment, {
-      key: s
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-      style: {
-        backgroundColor: done || active ? C.gold : "rgba(255,255,255,0.06)",
-        color: done || active ? "#0A1628" : C.sub
-      }
-    }, done ? /*#__PURE__*/React.createElement(Check, {
-      size: 15
-    }) : n), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs hidden sm:block",
-      style: {
-        color: active ? C.text : C.sub
-      }
-    }, s)), n < 3 && /*#__PURE__*/React.createElement("div", {
-      className: "flex-1 h-px",
-      style: {
-        backgroundColor: step > n ? C.gold : "rgba(255,255,255,0.1)"
-      }
-    }));
-  })), /*#__PURE__*/React.createElement(Card, {
-    style: {
-      maxWidth: 640
-    }
-  }, step === 1 && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-display text-lg font-semibold",
-    style: {
-      color: C.text
-    }
-  }, "Tell us about the business"), /*#__PURE__*/React.createElement(Field, {
-    label: "Business Name"
-  }, /*#__PURE__*/React.createElement("input", {
-    value: form.name,
-    onChange: e => setForm({
-      ...form,
-      name: e.target.value
-    }),
-    placeholder: "e.g. Crestwood Med Spa",
-    className: "w-full p-3 rounded-xl text-sm outline-none",
-    style: input
-  })), /*#__PURE__*/React.createElement(Field, {
-    label: "Industry"
-  }, /*#__PURE__*/React.createElement("select", {
-    value: form.industry,
-    onChange: e => setForm({
-      ...form,
-      industry: e.target.value
-    }),
-    className: "w-full p-3 rounded-xl text-sm outline-none",
-    style: input
-  }, ["Med Spa", "Salon", "Gym", "Dental", "Home Services", "Other"].map(o => /*#__PURE__*/React.createElement("option", {
-    key: o,
-    style: {
-      color: "#000"
-    }
-  }, o)))), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 gap-3"
-  }, /*#__PURE__*/React.createElement(Field, {
-    label: "Monthly Leads"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    value: form.leads,
-    onChange: e => setForm({
-      ...form,
-      leads: +e.target.value
-    }),
-    className: "w-full p-3 rounded-xl text-sm outline-none",
-    style: input
-  })), /*#__PURE__*/React.createElement(Field, {
-    label: "Avg Ticket ($)"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    value: form.ticket,
-    onChange: e => setForm({
-      ...form,
-      ticket: +e.target.value
-    }),
-    className: "w-full p-3 rounded-xl text-sm outline-none",
-    style: input
-  }))), /*#__PURE__*/React.createElement(GButton, {
-    variant: "primary",
-    className: "w-full",
-    onClick: () => setStep(2)
-  }, "Continue ", /*#__PURE__*/React.createElement(ArrowRight, {
-    size: 16
-  }))), step === 2 && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-display text-lg font-semibold",
-    style: {
-      color: C.text
-    }
-  }, "Pain Point Calculator"), /*#__PURE__*/React.createElement(Field, {
-    label: `Missed/unanswered leads: ${form.missedPct}%`
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "range",
-    min: 5,
-    max: 70,
-    value: form.missedPct,
-    onChange: e => setForm({
-      ...form,
-      missedPct: +e.target.value
-    }),
-    className: "w-full",
-    style: {
-      accentColor: C.gold
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 gap-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl",
-    style: {
-      backgroundColor: "rgba(239,68,68,0.08)",
-      border: "1px solid rgba(239,68,68,0.3)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, "Leads Missed / mo"), /*#__PURE__*/React.createElement("div", {
-    className: "text-2xl font-bold",
-    style: {
-      color: C.red
-    }
-  }, calc.missedLeads)), /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl",
-    style: {
-      backgroundColor: "rgba(239,68,68,0.08)",
-      border: "1px solid rgba(239,68,68,0.3)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, "Revenue Lost / mo"), /*#__PURE__*/React.createElement("div", {
-    className: "text-2xl font-bold",
-    style: {
-      color: C.red
-    }
-  }, "$", calc.missedRevenue.toLocaleString()))), /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl",
-    style: {
-      backgroundColor: "rgba(34,197,94,0.08)",
-      border: "1px solid rgba(34,197,94,0.3)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, "Recoverable with Infinity AI (\u224870%)"), /*#__PURE__*/React.createElement("div", {
-    className: "text-3xl font-bold",
-    style: {
-      color: C.green
-    }
-  }, "$", calc.recoverable.toLocaleString(), /*#__PURE__*/React.createElement("span", {
-    className: "text-base font-normal",
-    style: {
-      color: C.sub
-    }
-  }, "/mo"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement(GButton, {
-    variant: "ghost",
-    onClick: () => setStep(1),
-    icon: ArrowLeft
-  }, "Back"), /*#__PURE__*/React.createElement(GButton, {
-    variant: "primary",
-    className: "flex-1",
-    onClick: () => setStep(3)
-  }, "See Recommendation ", /*#__PURE__*/React.createElement(ArrowRight, {
-    size: 16
-  })))), step === 3 && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-center py-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "inline-flex w-14 h-14 rounded-2xl items-center justify-center mb-2",
-    style: {
-      background: `linear-gradient(135deg,${C.gold},#8a6f2a)`
-    }
-  }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 26,
-    style: {
-      color: "#0A1628"
-    }
-  })), /*#__PURE__*/React.createElement("h3", {
-    className: "font-display text-xl font-semibold",
-    style: {
-      color: C.text
-    }
-  }, "Recommended: ", pkg.name, " Package"), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm",
-    style: {
-      color: C.sub
-    }
-  }, "For ", form.name || "this business", " (", form.industry, ")")), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-3 gap-3 text-center"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl",
-    style: {
-      ...glass
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, "Investment"), /*#__PURE__*/React.createElement("div", {
-    className: "text-xl font-bold",
-    style: {
-      color: C.text
-    }
-  }, "$", pkg.price.toLocaleString(), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs"
-  }, "/mo"))), /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl",
-    style: {
-      ...glass
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, "Recovered"), /*#__PURE__*/React.createElement("div", {
-    className: "text-xl font-bold",
-    style: {
-      color: C.green
-    }
-  }, "$", calc.recoverable.toLocaleString())), /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl",
-    style: {
-      ...glass
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, "ROI"), /*#__PURE__*/React.createElement("div", {
-    className: "text-xl font-bold",
-    style: {
-      color: C.gold
-    }
-  }, roiMultiple, "x"))), /*#__PURE__*/React.createElement("div", {
-    className: "p-4 rounded-2xl text-center",
-    style: {
-      backgroundColor: "rgba(201,168,76,0.1)",
-      border: "1px solid rgba(201,168,76,0.3)"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm",
-    style: {
-      color: C.sub
-    }
-  }, "Projected annual upside"), /*#__PURE__*/React.createElement("div", {
-    className: "font-display text-3xl font-bold",
-    style: {
-      color: C.gold
-    }
-  }, "$", calc.annual.toLocaleString())), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement(GButton, {
-    variant: "ghost",
-    onClick: () => setStep(2),
-    icon: ArrowLeft
-  }, "Back"), /*#__PURE__*/React.createElement(GButton, {
-    variant: "primary",
-    className: "flex-1",
-    icon: FileText,
-    onClick: () => toast("Proposal generated from audit!")
-  }, "Generate Proposal")))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-6"
-  }, /*#__PURE__*/React.createElement(ROICalculator, {
-    toast: toast,
-    onBookDemo: onBookDemo,
-    roi: roi,
-    setRoi: setRoi
-  })));
+  var cardStyle = { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:24 };
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement(PageHeader, { title:"AI Revenue Audit", subtitle:"Find out how much revenue AI automation could add to your business" }),
+    !submitted
+      ? /*#__PURE__*/React.createElement("div", { style:Object.assign({},cardStyle,{maxWidth:620}) },
+          /*#__PURE__*/React.createElement("p", { style:{ color:'rgba(255,255,255,0.5)', fontSize:13, marginBottom:24, lineHeight:1.7 } }, "Answer 6 quick questions to get a personalized revenue estimate. Takes under 2 minutes."),
+          /*#__PURE__*/React.createElement("form", { onSubmit:handleSubmit },
+            /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gap:18 } },
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Business Name"),
+                /*#__PURE__*/React.createElement("input", { type:'text', required:true, placeholder:"e.g. Mike's Barbershop", style:inputStyle, value:form.businessName, onChange:inputChange('businessName') })
+              ),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Business Type"),
+                /*#__PURE__*/React.createElement("select", { style:Object.assign({},inputStyle,{cursor:'pointer'}), value:form.category, onChange:inputChange('category') },
+                  cats.map(function(c){ return /*#__PURE__*/React.createElement("option", { key:c, value:c, style:{ color:'#000' } }, c.charAt(0).toUpperCase()+c.slice(1)); })
+                )
+              ),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Estimated Monthly Revenue ($)"),
+                /*#__PURE__*/React.createElement("input", { type:'number', required:true, placeholder:'5000', min:'0', style:inputStyle, value:form.monthlyRevenue, onChange:inputChange('monthlyRevenue') })
+              ),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("label", { style:labelStyle }, "How many calls do you miss per week?"),
+                /*#__PURE__*/React.createElement("input", { type:'number', required:true, placeholder:'8', min:'0', style:inputStyle, value:form.missedCallsPerWeek, onChange:inputChange('missedCallsPerWeek') })
+              ),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Do you have a website?"),
+                /*#__PURE__*/React.createElement("div", { style:{ display:'flex', gap:12 } },
+                  ['yes','no'].map(function(v) {
+                    return /*#__PURE__*/React.createElement("button", { key:v, type:'button', onClick:function(){ setForm(function(p){ return Object.assign({},p,{hasWebsite:v}); }); },
+                      style:{ flex:1, padding:'10px', borderRadius:10, fontWeight:700, fontSize:14, cursor:'pointer', border:'2px solid '+(form.hasWebsite===v?'#C9A84C':'rgba(255,255,255,0.1)'), background:form.hasWebsite===v?'rgba(201,168,76,0.15)':'rgba(255,255,255,0.04)', color:form.hasWebsite===v?'#C9A84C':'rgba(255,255,255,0.5)' }
+                    }, v==='yes'?'Yes':'No');
+                  })
+                )
+              ),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Do you respond to Google reviews?"),
+                /*#__PURE__*/React.createElement("div", { style:{ display:'flex', gap:12 } },
+                  ['yes','no'].map(function(v) {
+                    return /*#__PURE__*/React.createElement("button", { key:v, type:'button', onClick:function(){ setForm(function(p){ return Object.assign({},p,{respondsToReviews:v}); }); },
+                      style:{ flex:1, padding:'10px', borderRadius:10, fontWeight:700, fontSize:14, cursor:'pointer', border:'2px solid '+(form.respondsToReviews===v?'#C9A84C':'rgba(255,255,255,0.1)'), background:form.respondsToReviews===v?'rgba(201,168,76,0.15)':'rgba(255,255,255,0.04)', color:form.respondsToReviews===v?'#C9A84C':'rgba(255,255,255,0.5)' }
+                    }, v==='yes'?'Yes':'No');
+                  })
+                )
+              ),
+              /*#__PURE__*/React.createElement("button", { type:'submit', style:{ background:'linear-gradient(135deg,#C9A84C,#8a6f2a)', color:'#0A1628', border:'none', borderRadius:12, padding:'14px', fontSize:15, fontWeight:900, cursor:'pointer', width:'100%', marginTop:8 } }, "\uD83D\uDD0D Calculate My Revenue Potential")
+            )
+          )
+        )
+      : /*#__PURE__*/React.createElement("div", { style:{ maxWidth:620 } },
+          /*#__PURE__*/React.createElement("div", { style:Object.assign({},cardStyle,{ marginBottom:20, borderTop:'3px solid #C9A84C' }) },
+            /*#__PURE__*/React.createElement("div", { style:{ color:'#C9A84C', fontWeight:900, fontSize:20, marginBottom:4 } }, "\uD83D\uDCCA Revenue Report: ", form.businessName),
+            /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.5)', fontSize:13 } }, "Here's how AI automation could transform your ", form.category, " business")
+          ),
+          /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:16, marginBottom:20 } },
+            [
+              { icon:'\uD83C\uDF10', label:'More Bookings via AI Website', val:'+$'+report.bookings.toLocaleString()+'/mo', color:'#60a5fa' },
+              { icon:'\uD83D\uDCDE', label:'Recovered Missed Calls',       val:'+$'+report.missedRev.toLocaleString()+'/mo', color:'#a78bfa' },
+              { icon:'\u2B50',        label:'Review Rating Improvement',    val:report.ratingGain,                             color:'#fbbf24' },
+              { icon:'\uD83D\uDCB0', label:'Total Est. Monthly Gain',      val:'+$'+report.total.toLocaleString()+'/mo',       color:'#4ade80' }
+            ].map(function(s) {
+              return /*#__PURE__*/React.createElement("div", { key:s.label, style:{ background:s.color+'11', border:'1px solid '+s.color+'33', borderRadius:14, padding:'18px 16px', textAlign:'center' } },
+                /*#__PURE__*/React.createElement("div", { style:{ fontSize:24, marginBottom:6 } }, s.icon),
+                /*#__PURE__*/React.createElement("div", { style:{ color:s.color, fontSize:20, fontWeight:900, marginBottom:4 } }, s.val),
+                /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.4)', fontSize:11, lineHeight:1.4 } }, s.label)
+              );
+            })
+          ),
+          /*#__PURE__*/React.createElement("div", { style:Object.assign({},cardStyle,{ textAlign:'center' }) },
+            /*#__PURE__*/React.createElement("div", { style:{ color:'#e2e8f0', fontWeight:700, fontSize:16, marginBottom:8 } }, "Ready to capture +$"+report.total.toLocaleString()+"/mo for "+form.businessName+"?"),
+            /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.45)', fontSize:13, marginBottom:20 } }, "Book a free 20-min strategy call and I'll show you exactly how to set this up."),
+            /*#__PURE__*/React.createElement("a", { href:"https://calendly.com/qaseensattar/ai-strategy-call", target:"_blank", rel:"noreferrer", style:{ display:'inline-block', background:'linear-gradient(135deg,#C9A84C,#8a6f2a)', color:'#0A1628', fontWeight:900, fontSize:16, padding:'16px 40px', borderRadius:12, textDecoration:'none', boxShadow:'0 8px 32px rgba(201,168,76,0.35)' } }, "\uD83D\uDCCB Book a Free Strategy Call"),
+            /*#__PURE__*/React.createElement("div", { style:{ marginTop:16 } },
+              /*#__PURE__*/React.createElement("button", { onClick:function(){ setSubmitted(false); setReport(null); }, style:{ background:'none', border:'none', color:'rgba(255,255,255,0.35)', fontSize:12, cursor:'pointer' } }, "Start over")
+            )
+          )
+        )
+  );
 }
+
 function SimpleListPage({
   title,
   subtitle,
@@ -4146,80 +3850,64 @@ function ProposalsPage({
 function BillingPage({
   toast
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
-    title: "Billing",
-    subtitle: "Subscriptions, invoices & payouts"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "grid lg:grid-cols-3 gap-4 mb-4"
-  }, /*#__PURE__*/React.createElement(Stat, {
-    label: "MRR Collected",
-    value: "$14,500",
-    delta: "+22%",
-    deltaUp: true,
-    icon: DollarSign
-  }), /*#__PURE__*/React.createElement(Stat, {
-    label: "Outstanding",
-    value: "$1,500",
-    icon: Clock
-  }), /*#__PURE__*/React.createElement(Stat, {
-    label: "Next Payout",
-    value: "$11,600",
-    delta: "Jun 1",
-    deltaUp: true,
-    icon: CreditCard
-  })), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement("h3", {
-    className: "font-display font-semibold mb-4",
-    style: {
-      color: C.text
+  var [mrr, setMrr] = React.useState(0);
+  var [clients, setClients] = React.useState([]);
+  React.useEffect(function() {
+    var db = window.qaiDB;
+    if (db) {
+      db.from('clients').select('*').then(function(res) {
+        if (!res.error && res.data) {
+          setClients(res.data);
+          setMrr(res.data.reduce(function(s,c){ return s+(c.mrr||0); }, 0));
+        }
+      });
+    } else {
+      try { var s=JSON.parse(localStorage.getItem('qai_clients')||'[]'); setClients(s); setMrr(s.reduce(function(a,c){ return a+(c.mrr||0); },0)); } catch(e){}
     }
-  }, "Recent Invoices"), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-2"
-  }, [{
-    c: "Crestwood Med Spa",
-    a: 3500,
-    s: "Paid",
-    col: C.green
-  }, {
-    c: "Iron Forge Gym",
-    a: 6500,
-    s: "Paid",
-    col: C.green
-  }, {
-    c: "Bright Smile Dental",
-    a: 1500,
-    s: "Paid",
-    col: C.green
-  }, {
-    c: "Hudson Salon",
-    a: 1500,
-    s: "Overdue",
-    col: C.red
-  }].map((inv, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    className: "flex items-center justify-between p-3 rounded-xl",
-    style: {
-      backgroundColor: "rgba(255,255,255,0.02)"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm",
-    style: {
-      color: C.text
-    }
-  }, inv.c), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm font-semibold",
-    style: {
-      color: C.text
-    }
-  }, "$", inv.a.toLocaleString()), /*#__PURE__*/React.createElement(Badge, {
-    color: inv.col
-  }, inv.s), inv.s === "Overdue" && /*#__PURE__*/React.createElement(GButton, {
-    size: "sm",
-    variant: "soft",
-    onClick: () => toast(`Reminder sent to ${inv.c}`)
-  }, "Remind")))))));
+  }, []);
+  var cardStyle = { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:24 };
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement(PageHeader, { title:"Billing & Revenue", subtitle:"Client billing, invoices, and MRR tracking" }),
+    /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16, marginBottom:28 } },
+      /*#__PURE__*/React.createElement("div", { style:Object.assign({},cardStyle,{ borderTop:'3px solid #4ade80' }) },
+        /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.4)', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6 } }, "Monthly Recurring Revenue"),
+        /*#__PURE__*/React.createElement("div", { style:{ color:'#4ade80', fontSize:32, fontWeight:900 } }, "$"+mrr.toLocaleString()),
+        /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.3)', fontSize:12, marginTop:4 } }, mrr===0?"No active clients yet":clients.length+" active client(s)")
+      )
+    ),
+    /*#__PURE__*/React.createElement("div", { style:cardStyle },
+      /*#__PURE__*/React.createElement("div", { style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 } },
+        /*#__PURE__*/React.createElement("div", { style:{ color:'#C9A84C', fontWeight:800, fontSize:16 } }, "Client Billing"),
+        /*#__PURE__*/React.createElement("button", {
+          onClick:function(){ toast('Feature coming soon \u2014 connect Stripe to activate'); },
+          style:{ background:'linear-gradient(135deg,#C9A84C,#8a6f2a)', color:'#0A1628', border:'none', borderRadius:8, padding:'8px 16px', fontSize:12, fontWeight:700, cursor:'pointer' }
+        }, "+ Add Client Billing")
+      ),
+      /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gridTemplateColumns:'1fr 160px 120px 100px 120px', padding:'8px 12px', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.02)', borderRadius:8, marginBottom:4 } },
+        ['Client Name','Service','Monthly Fee','Status','Start Date'].map(function(h) {
+          return /*#__PURE__*/React.createElement("div", { key:h, style:{ color:'rgba(255,255,255,0.3)', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em' } }, h);
+        })
+      ),
+      clients.length===0
+        ? /*#__PURE__*/React.createElement("div", { style:{ textAlign:'center', padding:'48px 20px', color:'rgba(255,255,255,0.25)', fontSize:14 } },
+            /*#__PURE__*/React.createElement("div", { style:{ fontSize:36, marginBottom:12 } }, "\uD83D\uDCCA"),
+            "No active clients yet.",
+            /*#__PURE__*/React.createElement("br", null),
+            /*#__PURE__*/React.createElement("span", { style:{ fontSize:12, color:'rgba(255,255,255,0.15)' } }, "Once you close a deal and onboard a client, their billing will appear here.")
+          )
+        : clients.map(function(c,i) {
+            return /*#__PURE__*/React.createElement("div", { key:c.id||i, style:{ display:'grid', gridTemplateColumns:'1fr 160px 120px 100px 120px', padding:'10px 12px', borderBottom:'1px solid rgba(255,255,255,0.04)', alignItems:'center' } },
+              /*#__PURE__*/React.createElement("div", { style:{ color:'#e2e8f0', fontSize:13, fontWeight:600 } }, c.name||c.businessName||'Unknown'),
+              /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.5)', fontSize:12 } }, c.industry||'AI Automation'),
+              /*#__PURE__*/React.createElement("div", { style:{ color:'#4ade80', fontWeight:700, fontSize:13 } }, c.mrr?'$'+c.mrr.toLocaleString()+'/mo':'\u2014'),
+              /*#__PURE__*/React.createElement("span", { style:{ background:'rgba(74,222,128,0.15)', color:'#4ade80', borderRadius:6, padding:'3px 8px', fontSize:11, fontWeight:700 } }, c.status||'Active'),
+              /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.3)', fontSize:12 } }, c.start_date||'\u2014')
+            );
+          })
+    )
+  );
 }
+
 function AcademyPage({
   toast
 }) {
@@ -4300,86 +3988,101 @@ function AcademyPage({
 function SettingsPage({
   toast
 }) {
-  const [toggles, setToggles] = useState({
-    emailAlerts: true,
-    smsAlerts: false,
-    autoReply: true,
-    weekly: true
+  var [profile, setProfile] = React.useState(function() {
+    try { return JSON.parse(localStorage.getItem('qai_profile')||'null') || { firstName:'Qaseem', lastName:'Sattar', phone:'', businessName:'Infinity AI Systems LLC' }; } catch(e) { return { firstName:'Qaseem', lastName:'Sattar', phone:'', businessName:'Infinity AI Systems LLC' }; }
   });
-  const rows = [{
-    k: "emailAlerts",
-    l: "Email Alerts",
-    d: "Receive churn & error alerts by email"
-  }, {
-    k: "smsAlerts",
-    l: "SMS Alerts",
-    d: "Critical alerts texted to you"
-  }, {
-    k: "autoReply",
-    l: "AI Auto-Reply",
-    d: "Let AI respond to common questions instantly"
-  }, {
-    k: "weekly",
-    l: "Weekly Digest",
-    d: "Performance summary every Monday"
-  }];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
-    title: "Settings",
-    subtitle: "Manage your agency preferences"
-  }), /*#__PURE__*/React.createElement(Card, {
-    style: {
-      maxWidth: 640
+  var [pwForm, setPwForm] = React.useState({ current:'', next:'', confirm:'' });
+  var [showPw, setShowPw] = React.useState(false);
+  var [notifs, setNotifs] = React.useState(function() {
+    try { return JSON.parse(localStorage.getItem('qai_notifs')||'null') || { researchLeads:true, outreachSent:true, morningDigest:true }; } catch(e) { return { researchLeads:true, outreachSent:true, morningDigest:true }; }
+  });
+  var inputStyle = { backgroundColor:'rgba(255,255,255,0.05)', color:'#e2e8f0', border:'1px solid rgba(201,168,76,0.25)', borderRadius:10, padding:'10px 14px', fontSize:14, width:'100%', boxSizing:'border-box' };
+  var labelStyle = { color:'rgba(255,255,255,0.5)', fontSize:12, fontWeight:600, marginBottom:6, display:'block' };
+  var sectionTitle = { color:'#C9A84C', fontWeight:800, fontSize:16, marginBottom:16 };
+  var cardStyle = { background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:24, marginBottom:20 };
+  var saveProfile = function() { localStorage.setItem('qai_profile', JSON.stringify(profile)); toast('Profile saved'); };
+  var changePassword = function(e) {
+    e.preventDefault();
+    if (!pwForm.current) { toast('Enter your current password'); return; }
+    if (pwForm.next.length < 6) { toast('New password must be 6+ characters'); return; }
+    if (pwForm.next !== pwForm.confirm) { toast('Passwords do not match'); return; }
+    toast('Password updated');
+    setShowPw(false);
+    setPwForm({ current:'', next:'', confirm:'' });
+  };
+  var logOut = function() {
+    if (window.confirm('Log out? This will clear your local session data.')) { localStorage.clear(); window.location.reload(); }
+  };
+  var resetAgentData = function() {
+    if (window.confirm('Reset all agent data? This clears agent logs, research leads, and activity history.')) {
+      ['agent_logs','agent_research_leads','savedLeads','lastAutoScan','lastCity'].forEach(function(k){ localStorage.removeItem(k); });
+      toast('Agent data reset');
     }
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-display font-semibold mb-4",
-    style: {
-      color: C.text
-    }
-  }, "Notifications & Automation"), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-2"
-  }, rows.map(r => /*#__PURE__*/React.createElement("div", {
-    key: r.k,
-    className: "flex items-center justify-between p-3 rounded-xl",
-    style: {
-      backgroundColor: "rgba(255,255,255,0.02)"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-sm font-medium",
-    style: {
-      color: C.text
-    }
-  }, r.l), /*#__PURE__*/React.createElement("div", {
-    className: "text-xs",
-    style: {
-      color: C.sub
-    }
-  }, r.d)), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setToggles({
-        ...toggles,
-        [r.k]: !toggles[r.k]
-      });
-      toast(`${r.l} ${!toggles[r.k] ? "enabled" : "disabled"}`);
-    },
-    className: "w-12 h-7 rounded-full relative",
-    style: {
-      backgroundColor: toggles[r.k] ? C.gold : "rgba(255,255,255,0.1)",
-      transition: "background 0.2s"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "absolute top-1 w-5 h-5 rounded-full",
-    style: {
-      backgroundColor: "#fff",
-      left: toggles[r.k] ? 26 : 4,
-      transition: "left 0.2s"
-    }
-  }))))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4"
-  }, /*#__PURE__*/React.createElement(GButton, {
-    variant: "primary",
-    icon: Check,
-    onClick: () => toast("Settings saved")
-  }, "Save Changes"))));
+  };
+  var toggleNotif = function(k) {
+    setNotifs(function(p){ var n=Object.assign({},p); n[k]=!p[k]; localStorage.setItem('qai_notifs',JSON.stringify(n)); return n; });
+  };
+  var Toggle = function(props) {
+    return /*#__PURE__*/React.createElement("button", { onClick:function(){ toggleNotif(props.k); }, style:{ width:48, height:28, borderRadius:14, border:'none', cursor:'pointer', position:'relative', background:notifs[props.k]?'#C9A84C':'rgba(255,255,255,0.1)', transition:'background 0.2s', flexShrink:0 } },
+      /*#__PURE__*/React.createElement("span", { style:{ position:'absolute', top:4, width:20, height:20, borderRadius:10, background:'#fff', left:notifs[props.k]?24:4, transition:'left 0.2s' } })
+    );
+  };
+  return /*#__PURE__*/React.createElement("div", { style:{ maxWidth:660 } },
+    /*#__PURE__*/React.createElement(PageHeader, { title:"Settings", subtitle:"Manage your agency profile, security, and preferences" }),
+    /* Section 1 - Profile */
+    /*#__PURE__*/React.createElement("div", { style:cardStyle },
+      /*#__PURE__*/React.createElement("div", { style:sectionTitle }, "Profile"),
+      /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 } },
+        /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", { style:labelStyle }, "First Name"), /*#__PURE__*/React.createElement("input", { type:'text', style:inputStyle, value:profile.firstName, onChange:function(e){ setProfile(function(p){ return Object.assign({},p,{firstName:e.target.value}); }); } })),
+        /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Last Name"),  /*#__PURE__*/React.createElement("input", { type:'text', style:inputStyle, value:profile.lastName,  onChange:function(e){ setProfile(function(p){ return Object.assign({},p,{lastName:e.target.value}); }); } }))
+      ),
+      /*#__PURE__*/React.createElement("div", { style:{ marginBottom:16 } }, /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Email (read-only)"), /*#__PURE__*/React.createElement("input", { type:'email', style:Object.assign({},inputStyle,{opacity:0.5,cursor:'not-allowed'}), value:'qaseemfit@gmail.com', readOnly:true })),
+      /*#__PURE__*/React.createElement("div", { style:{ marginBottom:16 } }, /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Phone Number"), /*#__PURE__*/React.createElement("input", { type:'tel', style:inputStyle, placeholder:'+1 (571) 555-0000', value:profile.phone, onChange:function(e){ setProfile(function(p){ return Object.assign({},p,{phone:e.target.value}); }); } })),
+      /*#__PURE__*/React.createElement("div", { style:{ marginBottom:20 } }, /*#__PURE__*/React.createElement("label", { style:labelStyle }, "Business Name"), /*#__PURE__*/React.createElement("input", { type:'text', style:inputStyle, value:profile.businessName, onChange:function(e){ setProfile(function(p){ return Object.assign({},p,{businessName:e.target.value}); }); } })),
+      /*#__PURE__*/React.createElement("button", { onClick:saveProfile, style:{ background:'linear-gradient(135deg,#C9A84C,#8a6f2a)', color:'#0A1628', border:'none', borderRadius:10, padding:'10px 24px', fontSize:13, fontWeight:700, cursor:'pointer' } }, "Save Changes")
+    ),
+    /* Section 2 - Security */
+    /*#__PURE__*/React.createElement("div", { style:cardStyle },
+      /*#__PURE__*/React.createElement("div", { style:sectionTitle }, "Security"),
+      !showPw
+        ? /*#__PURE__*/React.createElement("div", { style:{ display:'flex', gap:12 } },
+            /*#__PURE__*/React.createElement("button", { onClick:function(){ setShowPw(true); }, style:{ background:'rgba(255,255,255,0.05)', color:'#e2e8f0', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 20px', fontSize:13, fontWeight:600, cursor:'pointer' } }, "Change Password"),
+            /*#__PURE__*/React.createElement("button", { onClick:logOut, style:{ background:'rgba(239,68,68,0.1)', color:'#ef4444', border:'1px solid rgba(239,68,68,0.25)', borderRadius:10, padding:'10px 20px', fontSize:13, fontWeight:600, cursor:'pointer' } }, "Log Out")
+          )
+        : /*#__PURE__*/React.createElement("form", { onSubmit:changePassword },
+            /*#__PURE__*/React.createElement("div", { style:{ display:'grid', gap:14, marginBottom:16 } },
+              ['current','next','confirm'].map(function(k) {
+                var lbls = { current:'Current Password', next:'New Password', confirm:'Confirm New Password' };
+                return /*#__PURE__*/React.createElement("div", { key:k }, /*#__PURE__*/React.createElement("label", { style:labelStyle }, lbls[k]), /*#__PURE__*/React.createElement("input", { type:'password', required:true, style:inputStyle, value:pwForm[k], onChange:function(e){ setPwForm(function(p){ var n=Object.assign({},p); n[k]=e.target.value; return n; }); } }));
+              })
+            ),
+            /*#__PURE__*/React.createElement("div", { style:{ display:'flex', gap:12 } },
+              /*#__PURE__*/React.createElement("button", { type:'submit', style:{ background:'linear-gradient(135deg,#C9A84C,#8a6f2a)', color:'#0A1628', border:'none', borderRadius:10, padding:'10px 24px', fontSize:13, fontWeight:700, cursor:'pointer' } }, "Update Password"),
+              /*#__PURE__*/React.createElement("button", { type:'button', onClick:function(){ setShowPw(false); }, style:{ background:'none', color:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 20px', fontSize:13, cursor:'pointer' } }, "Cancel")
+            )
+          )
+    ),
+    /* Section 3 - Notifications */
+    /*#__PURE__*/React.createElement("div", { style:cardStyle },
+      /*#__PURE__*/React.createElement("div", { style:sectionTitle }, "Notifications"),
+      [
+        { k:'researchLeads', l:'Email me when Research Agent finds new leads' },
+        { k:'outreachSent',  l:'Email me when Outreach Agent sends emails' },
+        { k:'morningDigest', l:'Daily Morning Digest to qaseemfit@gmail.com' }
+      ].map(function(row) {
+        return /*#__PURE__*/React.createElement("div", { key:row.k, style:{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid rgba(255,255,255,0.04)' } },
+          /*#__PURE__*/React.createElement("span", { style:{ color:'rgba(255,255,255,0.7)', fontSize:13 } }, row.l),
+          /*#__PURE__*/React.createElement(Toggle, { k:row.k })
+        );
+      })
+    ),
+    /* Section 4 - Danger Zone */
+    /*#__PURE__*/React.createElement("div", { style:Object.assign({},cardStyle,{ border:'1px solid rgba(239,68,68,0.25)' }) },
+      /*#__PURE__*/React.createElement("div", { style:{ color:'#ef4444', fontWeight:800, fontSize:16, marginBottom:12 } }, "Danger Zone"),
+      /*#__PURE__*/React.createElement("p", { style:{ color:'rgba(255,255,255,0.4)', fontSize:13, marginBottom:16 } }, "These actions cannot be undone. Proceed carefully."),
+      /*#__PURE__*/React.createElement("button", { onClick:resetAgentData, style:{ background:'rgba(239,68,68,0.1)', color:'#ef4444', border:'1px solid rgba(239,68,68,0.25)', borderRadius:10, padding:'10px 20px', fontSize:13, fontWeight:700, cursor:'pointer' } }, "Reset All Agent Data")
+    )
+  );
 }
 
 /* ============================ PLATFORM OWNER PAGES ============================ */
@@ -7159,6 +6862,24 @@ function SitePreviewModal({
     title: "Site Preview"
   })));
 }
+/* ===== Per-category sales scripts ===== */
+var CATEGORY_SCRIPTS = {
+  'barber shop':     function(n, city) { return 'Hey ' + n + ' team,\n\nI was looking up barber shops in ' + city + ' and noticed you don\'t have a website yet.\n\nIn 2026, 87% of customers Google a business before walking in. Without a site, you\'re invisible to that search.\n\nWe build AI-powered sites for barber shops that auto-book appointments, answer calls 24/7, and send reminders. Shops like yours typically add 15\u201320 new clients/month in the first 60 days.\n\nI already built a quick preview for ' + n + '. Can I send you the link right now?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'hair salon':      function(n, city) { return 'Hi ' + n + ' team,\n\nI noticed your salon in ' + city + ' doesn\'t have a website.\n\nSalons without websites miss 40\u201360% of potential new clients who search online before booking. Your competitors are showing up \u2014 you aren\'t.\n\nWe install AI booking systems for salons: 24/7 receptionist, automated reminders, missed-call text-back. Average result: +$2,400/mo in recovered bookings.\n\nI can show you a live demo in 10 minutes. Interested?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'nail salon':      function(n, city) { return 'Hi ' + n + ',\n\nSearching for nail salons in ' + city + ' \u2014 your business showed up but had no website.\n\n73% of nail salon customers book online when they have the option. Without that, you\'re losing bookings to whoever shows up first in Google.\n\nOur AI system builds your site, adds online booking, and follows up with clients via text. Most salons see +12\u201318 new bookings/week.\n\nWant me to show you what it would look like for ' + n + '?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'gym':             function(n, city) { return 'Hey ' + n + ' team,\n\nI checked out gyms in ' + city + ' and noticed ' + n + ' doesn\'t have a website.\n\nIn 2026, gym-goers compare 3\u20135 options online before signing up. If you\'re not there, you lose the prospect before they ever walk in.\n\nWe build AI-powered gym sites with automated membership sign-up, trial booking, and 24/7 chatbot answers for pricing/hours. Clients add 20\u201335 new members in 90 days on average.\n\nCan I send you a quick preview built for ' + n + '?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'auto repair':     function(n, city) { return 'Hi ' + n + ' team,\n\nI found your shop in ' + city + ' but noticed there\'s no website.\n\nAuto repair shops that add online booking recover an average of 12 missed appointments per week \u2014 at $180/ticket, that\'s $2,160/week left on the table.\n\nWe build AI sites for shops like yours: online estimates, appointment booking, and a 24/7 phone agent that handles after-hours calls.\n\nI built a preview for ' + n + '. Want to see it?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'restaurant':      function(n, city) { return 'Hi ' + n + ',\n\nI was searching for restaurants in ' + city + ' and came across your spot \u2014 no website though.\n\nIn 2026, 92% of diners check a restaurant online before visiting. Without a site, you\'re losing walk-ins to whoever shows up in Google.\n\nWe build AI-powered restaurant sites with online reservations, menu display, and Google review management. Average impact: +22% in table reservations in the first month.\n\nWant me to show you what it looks like for ' + n + '?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'cleaning service':function(n, city) { return 'Hi ' + n + ' team,\n\nI searched for cleaning services in ' + city + ' and noticed ' + n + ' has no website.\n\nMost homeowners search online before hiring a cleaner \u2014 without a site, you\'re relying 100% on word-of-mouth in a market that\'s gone digital.\n\nWe build AI sites for cleaning services with instant quote calculators, online booking, and automated follow-ups. Average result: +8\u201312 new recurring clients in 60 days.\n\nCan I show you a quick demo for ' + n + '?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'landscaping':     function(n, city) { return 'Hi ' + n + ',\n\nLooking up landscaping companies in ' + city + ' \u2014 your business came up but had no website.\n\n68% of homeowners search online for landscapers. Without a site, you miss every single one of those leads.\n\nWe build AI sites for landscaping companies: photo galleries, quote request forms, seasonal promotions, and automated follow-up texts. Average result: +14 new quote requests/month.\n\nI already started a preview for ' + n + '. Interested?\n\nBest,\nQaseem | Infinity AI Systems LLC'; },
+  'default':         function(n, city) { return 'Hi ' + n + ' team,\n\nI noticed your business in ' + city + ' doesn\'t have a website yet.\n\nIn 2026, 87% of customers Google a business before visiting. Without a website, you\'re invisible to the majority of your potential customers.\n\nWe build AI-powered websites for local businesses that automate bookings, recover missed calls, and follow up with leads automatically. Most clients see $1,500\u2013$3,000 in new monthly revenue within 60 days.\n\nCan I show you what we\'d build for ' + n + '? Takes 10 minutes.\n\nBest,\nQaseem Sattar\nInfinity AI Systems LLC\nhttps://calendly.com/qaseensattar/ai-strategy-call'; }
+};
+function getCategoryScript(category, businessName, city) {
+  var cat = (category || '').toLowerCase();
+  var fn = CATEGORY_SCRIPTS[cat] || CATEGORY_SCRIPTS['default'];
+  return fn(businessName || 'your business', city || 'your area');
+}
+
 function ProspectingPage({
   toast
 }) {
@@ -7390,7 +7111,7 @@ function ProspectingPage({
     border: '1px solid rgba(201,168,76,0.2)',
     outline: 'none'
   };
-  var script     = selectedLead ? getCallScript(selectedLead.category, selectedLead.businessName) : '';
+  var script = selectedLead ? getCategoryScript(selectedLead.category, selectedLead.businessName, selectedLead.city || 'Woodbridge, VA') : '';
   var sitePrompt = selectedLead ? ('\u25B6 build_landing_page "' + selectedLead.businessName + '" ' + selectedLead.category + ' NoVA lead_capture=true missed_call=true booking=true') : '';
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -7556,7 +7277,7 @@ function ProspectingPage({
 
               // Tabs
               React.createElement('div', { className:'flex gap-2 mb-4' },
-                [{ id:'script', label:'Call Script' }, { id:'preview', label:'Site Preview' }].map(function(tab) {
+                [{ id:'script', label:'Sales Script' }, { id:'preview', label:'Site Preview' }].map(function(tab) {
                   return React.createElement('button', {
                     key:tab.id, onClick:function(){ setActiveTab(tab.id); },
                     className:'px-4 py-2 rounded-xl text-sm font-semibold',
@@ -7590,7 +7311,13 @@ function ProspectingPage({
                   React.createElement('div', { className:'mt-3' },
                     React.createElement(GButton, { size:'sm', variant:'ghost', icon:Copy,
                       onClick:function(){ try{ navigator.clipboard.writeText(script); }catch(e){} toast('Script copied!'); }
-                    }, 'Copy Script')
+                    }, 'Copy Script'),
+                  React.createElement(GButton, { size:'sm', variant:'primary', icon:Send, style:{ marginLeft:8 },
+                      onClick:function(){
+                        try { var ex=JSON.parse(localStorage.getItem('agent_research_leads')||'[]'); if(!ex.find(function(l){ return l.id===selectedLead.id; })){ ex.push(selectedLead); localStorage.setItem('agent_research_leads',JSON.stringify(ex)); } } catch(e){}
+                        toast(selectedLead.businessName + ' added to Outreach queue');
+                      }
+                    }, 'Add to Outreach')
                   )
                 ),
                 React.createElement('div', { className:'mb-4' },
@@ -7755,9 +7482,68 @@ function PitchOverlay({ onClose }) {
       })
     ),
     /*#__PURE__*/React.createElement("a", {
-      href:"https://calendly.com", target:"_blank",
+      href:"https://calendly.com/qaseensattar/ai-strategy-call?utm_source=site&utm_medium=header&utm_campaign=revenue_audit&month=2026-06", target:"_blank",
       style:{ background:"linear-gradient(135deg,#C9A84C,#8a6f2a)", color:"#0A1628", fontWeight:900, fontSize:17, padding:"16px 44px", borderRadius:12, textDecoration:"none", letterSpacing:"0.01em", boxShadow:"0 8px 32px rgba(201,168,76,0.4)" }
     }, "\uD83D\uDCCB Book a Discovery Call")
+  );
+}
+
+
+/* ===== Sales Advisor AI Chat ===== */
+function SalesAdvisorChat({ selectedLead }) {
+  var [open, setOpen]   = React.useState(false);
+  var [msgs, setMsgs]   = React.useState([{ from:'ai', text:'Hi! I\'m your Sales Advisor. Select a lead in Lead Prospector and I\'ll give you tailored closing advice for that business type.' }]);
+  var [input, setInput] = React.useState('');
+  var ADVICE = {
+    'barber shop':     ['Barber shops live and die by loyalty. Lead with the missed-call recovery angle \u2014 every missed call is a $45 haircut gone to a competitor.', 'Barbers respond best to seeing their own Google listing first. Show them what comes up when you search their name + city.', 'Offer a 48-hour site preview. Don\'t ask for a sale on the first call \u2014 ask for 10 minutes to show them what you built.'],
+    'hair salon':      ['Salon owners are visual. Lead with a mock-up of their AI booking page \u2014 something they can show clients.', 'The strongest angle for salons: "Your receptionist can\'t work 24/7. Our AI can." Hit missed evening and weekend bookings.', 'Ask: "How many calls do you miss after 6pm?" Then multiply by their average ticket. That number sells the system.'],
+    'nail salon':      ['Nail salons are high-repeat businesses. Frame AI automation as a loyalty machine, not just a booking tool.', 'Many nail salon owners are non-native English speakers \u2014 keep the pitch visual and demo-first. Numbers do the talking.', 'Seasonal spikes (Valentine\'s, holidays) are their pain point. Position the AI as pre-booking season capacity.'],
+    'gym':             ['Gym owners fear churn above everything. Lead with the AI follow-up system that texts members who haven\'t checked in.', 'Free trial booking automation is the killer feature for gyms. Show them how many trial sign-ups turn into memberships when followed up automatically.', 'Ask: "How many new members did you get last month?" Then ask what happened to the ones who toured but didn\'t sign. That\'s the money.'],
+    'auto repair':     ['Auto repair is trust-heavy. The AI website gives them credibility \u2014 lead with reviews and Google presence.', 'After-hours calls are the #1 pain point. Position the AI receptionist as a 24/7 service advisor.', 'Most shops don\'t follow up after a repair. Automated "how was your service?" texts drive reviews and repeat business.'],
+    'restaurant':      ['Restaurants need reservations and Google Maps presence. Lead with "you\'re showing up but not converting" if they have no booking option.', 'Ask: "How many calls do you get asking about hours or menu?" That\'s 100% automatable. Save owner 2+ hours/week.', 'Google Reviews are the lifeblood of restaurants. An AI that auto-requests reviews after each visit is the easiest yes.'],
+    'cleaning service':['Cleaning services compete on trust and reliability. An AI site with reviews and verified badges closes the trust gap fast.', 'Offer a quote calculator on their site \u2014 instant online quotes convert 3x better than "call for pricing."', 'Cleaning service clients are highly recurring. The ROI of keeping one client via automated reminders/check-ins is $150+/mo.'],
+    'landscaping':     ['Landscaping is seasonal. Lead with "get booked solid before spring" as the urgency hook.', 'Most landscapers lose jobs because they don\'t follow up on estimates. An AI that auto-follows-up on quotes is pure gold.', 'Show them a competitor\'s website vs. their missing one. Visual comparison closes this every time.'],
+    'default':         ['Lead with the revenue number, not the technology. "We\'re going to recover $2,400/month you\'re currently leaving on the table."', 'The fastest close: "I already built a preview of your site. Can I send you the link?" It\'s hard to say no to something that exists.', 'Always book the next step before hanging up. A "call me back" is a dead lead. Get a specific time for a 10-min demo.']
+  };
+  var getResponse = function(msg, lead) {
+    var cat = lead ? (lead.category || '').toLowerCase() : 'default';
+    var tips = ADVICE[cat] || ADVICE['default'];
+    var lower = msg.toLowerCase();
+    if (lower.includes('close') || lower.includes('objection') || lower.includes('no')) return 'When they say no, ask: "What would need to be true for you to consider this?" Then solve that one thing. \u2014 ' + tips[2];
+    if (lower.includes('email') || lower.includes('outreach')) return 'Keep the first email under 5 sentences. Subject line: "Quick question about [Business Name]". Body: one problem, one solution, one CTA. \u2014 ' + tips[0];
+    if (lower.includes('price') || lower.includes('cost') || lower.includes('how much')) return 'Don\'t lead with price. Lead with ROI. "$1,500/mo sounds like a lot until you see the $2,400/mo you\'re recovering." Show the math first.';
+    return tips[Math.floor(Math.random() * tips.length)] + (lead ? ' (Tailored for ' + (lead.businessName || cat) + ')' : '');
+  };
+  var send = function() {
+    if (!input.trim()) return;
+    var userMsg = input.trim(); setInput('');
+    setMsgs(function(p){ return p.concat([{ from:'user', text:userMsg }]); });
+    setTimeout(function() { setMsgs(function(p){ return p.concat([{ from:'ai', text:getResponse(userMsg, selectedLead) }]); }); }, 600);
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null,
+    /*#__PURE__*/React.createElement("button", { onClick:function(){ setOpen(function(p){ return !p; }); }, style:{ position:'fixed', bottom:24, right:24, width:52, height:52, borderRadius:14, background:'rgba(10,22,40,0.95)', border:'2px solid #C9A84C', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, boxShadow:'0 8px 32px rgba(0,0,0,0.5)' } },
+      /*#__PURE__*/React.createElement(MessageCircle, { size:22, style:{ color:'#C9A84C' } })
+    ),
+    open && /*#__PURE__*/React.createElement("div", { style:{ position:'fixed', bottom:88, right:24, width:340, maxHeight:480, background:'rgba(10,22,40,0.97)', border:'1px solid rgba(201,168,76,0.3)', borderRadius:16, display:'flex', flexDirection:'column', zIndex:1000, boxShadow:'0 20px 60px rgba(0,0,0,0.7)', overflow:'hidden' } },
+      /*#__PURE__*/React.createElement("div", { style:{ padding:'14px 16px', borderBottom:'1px solid rgba(201,168,76,0.15)', display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(201,168,76,0.08)' } },
+        /*#__PURE__*/React.createElement("div", null,
+          /*#__PURE__*/React.createElement("div", { style:{ color:'#C9A84C', fontWeight:800, fontSize:14 } }, "Sales Advisor AI"),
+          /*#__PURE__*/React.createElement("div", { style:{ color:'rgba(255,255,255,0.4)', fontSize:11 } }, selectedLead ? 'Context: ' + selectedLead.businessName : 'Select a lead for context')
+        ),
+        /*#__PURE__*/React.createElement("button", { onClick:function(){ setOpen(false); }, style:{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:18, lineHeight:1 } }, "\u00D7")
+      ),
+      /*#__PURE__*/React.createElement("div", { style:{ flex:1, overflowY:'auto', padding:14, display:'flex', flexDirection:'column', gap:10 } },
+        msgs.map(function(m,i) {
+          return /*#__PURE__*/React.createElement("div", { key:i, style:{ alignSelf:m.from==='user'?'flex-end':'flex-start', maxWidth:'85%', background:m.from==='user'?'rgba(201,168,76,0.2)':'rgba(255,255,255,0.05)', borderRadius:m.from==='user'?'14px 14px 4px 14px':'14px 14px 14px 4px', padding:'10px 13px', color:'rgba(255,255,255,0.85)', fontSize:12, lineHeight:1.6, border:m.from==='ai'?'1px solid rgba(255,255,255,0.06)':'none' } }, m.text);
+        })
+      ),
+      /*#__PURE__*/React.createElement("div", { style:{ padding:'10px 14px', borderTop:'1px solid rgba(255,255,255,0.06)', display:'flex', gap:8 } },
+        /*#__PURE__*/React.createElement("input", { value:input, onChange:function(e){ setInput(e.target.value); }, onKeyDown:function(e){ if(e.key==='Enter') send(); }, placeholder:'Ask about closing, objections, email...', style:{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(201,168,76,0.2)', borderRadius:8, padding:'8px 12px', color:'#e2e8f0', fontSize:12, outline:'none' } }),
+        /*#__PURE__*/React.createElement("button", { onClick:send, style:{ background:'#C9A84C', border:'none', borderRadius:8, width:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' } },
+          /*#__PURE__*/React.createElement(Send, { size:14, style:{ color:'#0A1628' } })
+        )
+      )
+    )
   );
 }
 
@@ -8066,7 +7852,7 @@ function App() {
   }, renderPage())))), pitchMode && /*#__PURE__*/React.createElement(PitchOverlay, { onClose: function(){ setPitchMode(false); } }), /*#__PURE__*/React.createElement(Toasts, {
     toasts: toasts,
     remove: removeToast
-  }), /*#__PURE__*/React.createElement(WorkflowBuilderModal, {
+  }), /*#__PURE__*/React.createElement(SalesAdvisorChat, { selectedLead: null }), /*#__PURE__*/React.createElement(WorkflowBuilderModal, {
     open: showBuilder,
     onClose: () => setShowBuilder(false),
     onCreate: createWorkflow,

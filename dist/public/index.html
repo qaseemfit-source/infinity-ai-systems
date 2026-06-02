@@ -22,6 +22,97 @@ function initLeadFinder() {
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMbOUFTTHaLNyL4bNf2BsGKDdQJqwK1-Q&libraries=places&callback=initLeadFinder" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function() {
+  // ── Supabase V1 Client ────────────────────────────────────────────────────
+  // Replace with your Supabase project URL and anon key from:
+  // https://supabase.com/dashboard -> Settings -> API
+  var SUPABASE_URL = 'https://efuupdiazsdicwwyzysr.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmdXVwZGlhenNkaWN3d3l6eXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTQ2NjgsImV4cCI6MjA5NTkzMDY2OH0.YeBZuyGWpQtyI6neD3dkekXq_gsVuytzCzWdu_RxxuQ';
+
+  window.qaiDB = null;
+  try {
+    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && window.supabase) {
+      window.qaiDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { console.warn('[QAI] Supabase init error:', e.message); }
+
+  // ── DB helpers (localStorage fallback when Supabase not configured) ────────
+  function lsGet(key, def) {
+    try { return JSON.parse(localStorage.getItem(key) || def); } catch(e) { return JSON.parse(def); }
+  }
+  function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+  window.qaiHelpers = {
+    getClients: function() {
+      if (!window.qaiDB) return Promise.resolve(lsGet('qai_clients', '[]'));
+      return window.qaiDB.from('clients').select('*').order('name')
+        .then(function(r) { return r.error ? [] : r.data; });
+    },
+    upsertClient: function(client) {
+      var list = lsGet('qai_clients', '[]');
+      var idx = list.findIndex(function(c) { return c.id === client.id; });
+      var item = Object.assign({}, client, { id: client.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)) });
+      if (idx >= 0) list[idx] = item; else list.push(item);
+      lsSet('qai_clients', list);
+      if (!window.qaiDB) return Promise.resolve(item);
+      return window.qaiDB.from('clients').upsert(client).select().single()
+        .then(function(r) { return r.error ? item : r.data; });
+    },
+    deleteClient: function(id) {
+      var list = lsGet('qai_clients', '[]').filter(function(c) { return c.id !== id; });
+      lsSet('qai_clients', list);
+      if (!window.qaiDB) return Promise.resolve();
+      return window.qaiDB.from('clients').delete().eq('id', id).then(function() {});
+    },
+    saveLead: function(lead) {
+      var list = lsGet('savedLeads', '[]');
+      if (!list.find(function(l) { return l.placeId === lead.placeId; })) {
+        list.push(lead); lsSet('savedLeads', list);
+      }
+      if (!window.qaiDB) return Promise.resolve(lead);
+      var row = { place_id: lead.placeId, name: lead.businessName, category: lead.category,
+        address: lead.address, phone: lead.phone, city: lead.city || '',
+        has_website: lead.hasWebsite, website_url: lead.website,
+        rating: lead.rating, review_count: lead.reviewCount };
+      return window.qaiDB.from('leads').upsert(row, { onConflict: 'place_id' }).select().single()
+        .then(function(r) { return r.error ? lead : r.data; });
+    },
+    getLeads: function() {
+      if (!window.qaiDB) return Promise.resolve(lsGet('savedLeads', '[]'));
+      return window.qaiDB.from('leads').select('*').order('created_at', { ascending: false })
+        .then(function(r) { return r.error ? [] : r.data; });
+    },
+    getPipeline: function() {
+      if (!window.qaiDB) return Promise.resolve(lsGet('qai_pipeline', '[]'));
+      return window.qaiDB.from('pipeline_deals').select('*, clients(name)').order('created_at')
+        .then(function(r) { return r.error ? [] : r.data; });
+    },
+    upsertDeal: function(deal) {
+      var list = lsGet('qai_pipeline', '[]');
+      var idx = list.findIndex(function(d) { return d.id === deal.id; });
+      var item = Object.assign({}, deal, { id: deal.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)) });
+      if (idx >= 0) list[idx] = item; else list.push(item);
+      lsSet('qai_pipeline', list);
+      if (!window.qaiDB) return Promise.resolve(item);
+      return window.qaiDB.from('pipeline_deals').upsert(deal).select().single()
+        .then(function(r) { return r.error ? item : r.data; });
+    },
+    getSetting: function(key, fallback) {
+      if (!window.qaiDB) return Promise.resolve(localStorage.getItem('qai_setting_' + key) || fallback);
+      return window.qaiDB.from('user_settings').select('value').eq('key', key).single()
+        .then(function(r) { return (r.data && r.data.value) ? r.data.value : fallback; });
+    },
+    setSetting: function(key, value) {
+      localStorage.setItem('qai_setting_' + key, value);
+      if (!window.qaiDB) return Promise.resolve();
+      return window.qaiDB.from('user_settings').upsert({ key: key, value: value }, { onConflict: 'key' })
+        .then(function() {});
+    }
+  };
+})();
+</script>
 </head>
 <body>
 <div id="root"></div>
@@ -206,7 +297,7 @@ d|=e.subtreeFlags,d|=e.flags,e.return=a,e=e.sibling;a.subtreeFlags|=d;a.childLan
 256)||(b.flags|=1024,null!==wa&&(Gf(wa),wa=null));yi(a,b);W(b);return null;case 5:kf(b);var e=vb(xc.current);c=b.type;if(null!==a&&null!=b.stateNode)zk(a,b,c,d,e),a.ref!==b.ref&&(b.flags|=512,b.flags|=2097152);else{if(!d){if(null===b.stateNode)throw Error(n(166));W(b);return null}a=vb(Ea.current);if(pd(b)){d=b.stateNode;c=b.type;var f=b.memoizedProps;d[Da]=b;d[uc]=f;a=0!==(b.mode&1);switch(c){case "dialog":B("cancel",d);B("close",d);break;case "iframe":case "object":case "embed":B("load",d);break;
 case "video":case "audio":for(e=0;e<Ec.length;e++)B(Ec[e],d);break;case "source":B("error",d);break;case "img":case "image":case "link":B("error",d);B("load",d);break;case "details":B("toggle",d);break;case "input":kg(d,f);B("invalid",d);break;case "select":d._wrapperState={wasMultiple:!!f.multiple};B("invalid",d);break;case "textarea":ng(d,f),B("invalid",d)}pe(c,f);e=null;for(var g in f)if(f.hasOwnProperty(g)){var h=f[g];"children"===g?"string"===typeof h?d.textContent!==h&&(!0!==f.suppressHydrationWarning&&
 jd(d.textContent,h,a),e=["children",h]):"number"===typeof h&&d.textContent!==""+h&&(!0!==f.suppressHydrationWarning&&jd(d.textContent,h,a),e=["children",""+h]):$b.hasOwnProperty(g)&&null!=h&&"onScroll"===g&&B("scroll",d)}switch(c){case "input":Pc(d);mg(d,f,!0);break;case "textarea":Pc(d);pg(d);break;case "select":case "option":break;default:"function"===typeof f.onClick&&(d.onclick=kd)}d=e;b.updateQueue=d;null!==d&&(b.flags|=4)}else{g=9===e.nodeType?e:e.ownerDocument;"http://www.w3.org/1999/xhtml"===
-a&&(a=qg(c));"http://www.w3.org/1999/xhtml"===a?"script"===c?(a=g.createElement("div"),a.innerHTML="<script>\x3c/script>",a=a.removeChild(a.firstChild)):"string"===typeof d.is?a=g.createElement(c,{is:d.is}):(a=g.createElement(c),"select"===c&&(g=a,d.multiple?g.multiple=!0:d.size&&(g.size=d.size))):a=g.createElementNS(a,c);a[Da]=b;a[uc]=d;Ak(a,b,!1,!1);b.stateNode=a;a:{g=qe(c,d);switch(c){case "dialog":B("cancel",a);B("close",a);e=d;break;case "iframe":case "object":case "embed":B("load",a);e=d;break;
+a&&(a=qg(c));"http://www.w3.org/1999/xhtml"===a?"script"===c?(a=g.createElement("div"),a.innerHTML="\x3cscript>\x3c/script>",a=a.removeChild(a.firstChild)):"string"===typeof d.is?a=g.createElement(c,{is:d.is}):(a=g.createElement(c),"select"===c&&(g=a,d.multiple?g.multiple=!0:d.size&&(g.size=d.size))):a=g.createElementNS(a,c);a[Da]=b;a[uc]=d;Ak(a,b,!1,!1);b.stateNode=a;a:{g=qe(c,d);switch(c){case "dialog":B("cancel",a);B("close",a);e=d;break;case "iframe":case "object":case "embed":B("load",a);e=d;break;
 case "video":case "audio":for(e=0;e<Ec.length;e++)B(Ec[e],a);e=d;break;case "source":B("error",a);e=d;break;case "img":case "image":case "link":B("error",a);B("load",a);e=d;break;case "details":B("toggle",a);e=d;break;case "input":kg(a,d);e=ke(a,d);B("invalid",a);break;case "option":e=d;break;case "select":a._wrapperState={wasMultiple:!!d.multiple};e=E({},d,{value:void 0});B("invalid",a);break;case "textarea":ng(a,d);e=ne(a,d);B("invalid",a);break;default:e=d}pe(c,e);h=e;for(f in h)if(h.hasOwnProperty(f)){var k=
 h[f];"style"===f?sg(a,k):"dangerouslySetInnerHTML"===f?(k=k?k.__html:void 0,null!=k&&zi(a,k)):"children"===f?"string"===typeof k?("textarea"!==c||""!==k)&&Fc(a,k):"number"===typeof k&&Fc(a,""+k):"suppressContentEditableWarning"!==f&&"suppressHydrationWarning"!==f&&"autoFocus"!==f&&($b.hasOwnProperty(f)?null!=k&&"onScroll"===f&&B("scroll",a):null!=k&&$d(a,f,k,g))}switch(c){case "input":Pc(a);mg(a,d,!1);break;case "textarea":Pc(a);pg(a);break;case "option":null!=d.value&&a.setAttribute("value",""+Ua(d.value));
 break;case "select":a.multiple=!!d.multiple;f=d.value;null!=f?Db(a,!!d.multiple,f,!1):null!=d.defaultValue&&Db(a,!!d.multiple,d.defaultValue,!0);break;default:"function"===typeof e.onClick&&(a.onclick=kd)}switch(c){case "button":case "input":case "select":case "textarea":d=!!d.autoFocus;break a;case "img":d=!0;break a;default:d=!1}}d&&(b.flags|=4)}null!==b.ref&&(b.flags|=512,b.flags|=2097152)}W(b);return null;case 6:if(a&&null!=b.stateNode)Bk(a,b,a.memoizedProps,d);else{if("string"!==typeof d&&null===
@@ -1919,8 +2010,13 @@ function OperatorDashboard({
       color: C.green
     }
   };
-  // Pull live stats from localStorage (set by My Clients page)
-  const lsClients = (() => { try { return JSON.parse(localStorage.getItem('qai_clients') || '[]'); } catch(e) { return []; } })();
+  // Pull live stats — Supabase if configured, else localStorage
+  const [lsClients, setLsClients] = useState([]);
+  useEffect(function() {
+    if (typeof window.qaiHelpers !== 'undefined') {
+      window.qaiHelpers.getClients().then(setLsClients).catch(function(){});
+    }
+  }, []);
   const lsMRR = lsClients.length ? lsClients.reduce((s,c) => s + (Number(c.mrr)||0), 0) : 14500;
   const lsActiveClients = lsClients.length || 5;
   const lsAvgHealth = lsClients.length ? Math.round(lsClients.reduce((s,c) => s + (Number(c.health_score)||0), 0) / lsClients.length) : 78;
@@ -7357,18 +7453,6 @@ function App() {
     onClose: () => setShowBuilder(false),
     onCreate: createWorkflow,
     toast: toast
-  }), /*#__PURE__*/React.createElement(DemoRequestModal, {
-    open: showDemoReq,
-    onClose: () => setShowDemoReq(false),
-    toast: toast
-  }), /*#__PURE__*/React.createElement(LiveConfirmModal, {
-    open: showLiveModal,
-    onClose: () => setShowLiveModal(false),
-    onConfirm: () => {
-      setDemoMode(false);
-      setShowLiveModal(false);
-      toast("You're now in Live Mode", "success");
-    }
   }));
 }
 /* ============================================================
